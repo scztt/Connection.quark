@@ -1,0 +1,16 @@
+(
+          name: "",
+       summary: "",
+        author: "",
+     copyright: "",
+       license: "",
+       version: "0.0.1",
+        schelp: "",
+          test: "",
+           url: "",
+  dependencies: [
+
+                ],
+  isCompatible: false,
+         since: ""
+)
