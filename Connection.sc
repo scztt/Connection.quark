@@ -40,6 +40,11 @@ ConnectionList {
 		});
 	}
 
+	trace {
+		|shouldTrace=true|
+		list.do(_.trace(shouldTrace));
+	}
+
 	dependants {
 		^list.collect({ |o| o.dependants.asList }).flatten;
 	}
@@ -90,32 +95,96 @@ ConnectionList {
 }
 
 Connection {
+	classvar collectionStack;
+	classvar <tracing, <>traceAll=false;
+
 	var <object, <dependant;
 	var connected = false;
+	var <traceConnection;
+
+	*initClass {
+		tracing = List();
+	}
+
+	*traceWith {
+		|func|
+		var collected, wasTracingAll;
+		wasTracingAll = traceAll;
+		traceAll = true;
+
+		protect({
+			collected = Connection.collect(func);
+		}, {
+			if (wasTracingAll.not) {
+				collected.list.do(_.trace(false));
+			};
+			traceAll = wasTracingAll;
+		})
+	}
+
+	*collect {
+		|func|
+		this.prBeforeCollect();
+		protect {
+			func.value()
+		} {
+			^this.prAfterCollect();
+		}
+	}
+
+	*prBeforeCollect {
+		collectionStack = collectionStack.add(List(20));
+	}
+
+	*prAfterCollect {
+		var popped = collectionStack.pop();
+		if (collectionStack.size > 1) {
+			collectionStack.last.addAll(popped);
+		};
+		^ConnectionList(popped);
+	}
 
 	*basicNew {
 		|object, dependant, connected|
-		^super.newCopyArgs(object, dependant, connected)
+		^super.newCopyArgs(object, dependant, connected).trace(traceAll).prCollect()
 	}
 
 	*new {
 		|object, dependant, autoConnect=true|
-		^super.newCopyArgs(object, dependant).connected_(autoConnect);
+		^super.newCopyArgs(object, dependant).connected_(autoConnect).trace(traceAll).prCollect()
+	}
+
+	*untraceAll {
+		tracing.copy.do(_.trace(false));
+	}
+
+	prCollect {
+		if (collectionStack.size > 0) {
+			collectionStack.last.add(this);
+		}
 	}
 
 	connected {
-		^object.dependants.includes(dependant)
+		traceConnection.notNil.if {
+			^traceConnection.connected
+		} {
+			^object.dependants.includes(dependant);
+		}
 	}
 
 	connected_{
 		|connect|
-		if (connect != this.connected) {
-			connected = connect;
-			if (connect) {
-				object.addDependant(dependant);
-			} {
-				object.removeDependant(dependant);
+		if (traceConnection.isNil) {
+			if (connect != this.connected) {
+				connected = connect;
+				if (connect) {
+					object.addDependant(dependant);
+				} {
+					object.removeDependant(dependant);
+				}
 			}
+		} {
+			traceConnection.connected = connect;
 		}
 	}
 
@@ -142,6 +211,51 @@ Connection {
 			if (wasConnected) {
 				this.connect();
 			}
+		});
+	}
+
+	onTrace {
+		|obj, what ...values|
+		var from, to, connectedSym;
+		from = object.isKindOf(Connection).if({ object.dependant }, { object });
+		to = dependant.isKindOf(UpdateTracer).if({ dependant.wrappedObject }, { dependant });
+		connectedSym = this.connected.if("⋯", "⋰");
+
+		"% %.signal(%) → %\t =[%]".format(
+			connectedSym++connectedSym,
+			from.connectionTraceString(what),
+			"\\" ++ what,
+			to.connectionTraceString(what),
+			(values.collect(_.asCompileString)).join(","),
+		).postln
+	}
+
+	trace {
+		|shouldTrace=true|
+		if (shouldTrace) {
+			traceConnection ?? {
+				traceConnection = UpdateTracer(object, dependant, this);
+				object.removeDependant(dependant);
+				object.addDependant(traceConnection);
+				tracing.add(this);
+			}
+		} {
+			traceConnection !? {
+				var tempTrace = traceConnection;
+				traceConnection = nil;
+				object.removeDependant(tempTrace);
+				this.connected = tempTrace.connected;
+				tracing.remove(this);
+			}
+		}
+	}
+
+	traceWith {
+		|func|
+		var wasTracing = traceConnection.notNil;
+		this.trace(true);
+		protect(func, {
+			this.trace(wasTracing);
 		});
 	}
 
@@ -180,10 +294,13 @@ Connection {
 	chain {
 		|newDependant|
 		var oldObject, connection;
+		var wasTracing = traceConnection.notNil;
+		this.trace(false);
 
 		this.disconnectWith({
 			object = object.connectTo(newDependant);
-		})
+		});
+		this.trace(wasTracing);
 	}
 
 	filter {
@@ -212,9 +329,10 @@ Connection {
 }
 
 ViewValueUpdater {
-	classvar valueSignalFunc, onCloseFunc;
+	classvar funcs, onCloseFunc;
 
 	*initClass {
+		funcs = MultiLevelIdentityDictionary();
 		valueSignalFunc = {
 			|view|
 			view.changed(\value, view.value);
@@ -222,6 +340,15 @@ ViewValueUpdater {
 		onCloseFunc = {
 			|view|
 			ViewValueUpdater.disable(view);
+		};
+	}
+
+	actionFunc {
+		|propertyName, signalName|
+		var func = funcs.at(actionName, propertyName, signalName);
+		if (func.isNil) {
+			func = "{ |view ...args| }"
+			funcs.put(actionName, propertyName, signalName, )
 		};
 	}
 
@@ -249,49 +376,78 @@ ViewValueUpdater {
 	}
 }
 
-ConnectionManager {
-	var connections;
+UpdateForwarder {
+	var <dependants;
 
 	*new {
-		^super.new.init;
+		^super.new.prInitDependants;
 	}
-
-	init {
-		connections = List();
+	prInitDependants{
+		dependants = IdentitySet();
 	}
-
-	connect {
-		|from, to|
-		connections.add(Connection(from, to));
-	}
-
-	disconnect {
-		|object, dependant|
-		var found;
-		found = connections.select {
-			|conn|
-			(object.isNil || (object == conn.object))
-			&& (dependant.isNil || (dependant == conn.dependant))
-		};
-
-		found.do({
-			|conn|
-			connections.remove(conn.disconnect());
+	changed { arg what ... moreArgs;
+		dependants.do({ arg item;
+			item.update(this, what, *moreArgs);
 		});
 	}
-
-	disconnectAll {
-		connections.do(_.disconnect());
-		connections.clear();
+	addDependant { arg dependant;
+		dependants.add(dependant);
+	}
+	removeDependant { arg dependant;
+		dependants.remove(dependant);
+	}
+	release {
+		this.releaseDependants;
+	}
+	releaseDependants {
+		dependants.clear();
+	}
+	update {
+		|object, what ...args|
+		dependants.do {
+			|item|
+			item.update(object, what, *args);
+		}
 	}
 }
 
-ForwardingSlot {
+UpdateTracer {
+	var <upstream, <wrappedObject, <connection;
+	var <>connected;
+
+	*new {
+		|upstream, wrappedObject, connection|
+		^super.newCopyArgs(upstream, wrappedObject, connection).init
+	}
+
+	init {
+		connected = upstream.dependants.includes(wrappedObject);
+	}
+
 	update {
 		|object, what ...args|
-		dependantsDictionary.at(this).copy.do({ arg item;
-			item.update(object, what, *args);
-		});
+		connection.onTrace(object, what, *args);
+		if (connected) {
+			wrappedObject.update(object, what, *args);
+		}
+	}
+
+	addDependant {
+		|dependant|
+		wrappedObject.addDependant(dependant);
+	}
+
+	removeDependant {
+		|dependant|
+		wrappedObject.removeDependant(dependant);
+	}
+
+	release {
+		wrappedObject.release();
+	}
+
+	releaseDependants {
+		wrappedObject.releaseDependants();
 	}
 }
 
@@ -369,10 +525,68 @@ ConnectionMap : ConnectionList {
 }
 
 UpdateKeyFilter : UpdateFilter {
+	var <>key;
+
 	*new {
 		|key|
 		var func = "{ |obj, inKey| % == inKey }".format("\\" ++ key).interpret;
-		^super.new(func);
+		^super.new(func).key_(key);
+	}
+
+	connectionTraceString {
+		^"%(%)".format(this.class, "\\" ++ key)
+	}
+}
+
+UpdateDispatcher {
+	classvar <dispatcherDict;
+
+	var dispatchTable;
+	var connection;
+
+	*initClass {
+		dispatcherDict = IdentityDictionary();
+	}
+
+	*new {
+		|object|
+		^dispatcherDict.atFail(object, {
+			var newObj = super.new.init(object);
+			dispatcherDict[object] = newObj;
+			newObj;
+		})
+	}
+
+	init {
+		|object|
+		connection = object.connectTo(this);
+		dispatchTable = IdentityDictionary();
+	}
+
+	at {
+		|key|
+		^dispatchTable.atFail(key, {
+			var dep = UpdateForwarder();
+			dispatchTable[key] = dep;
+			dep;
+		})
+	}
+
+	dependants {
+		^(super.dependants ++ dispatchTable.values);
+	}
+
+	update {
+		|obj, what ...args|
+		dispatchTable[what] !? {
+			|forwarder|
+			forwarder.update(obj, what, *args);
+		}
+	}
+
+	connectionTraceString {
+		|what|
+		^dispatchTable[what].connectionTraceString ?? { "%(%) - no target".format(this.class, this.identityHash) };
 	}
 }
 
@@ -455,6 +669,11 @@ MethodSlot {
 	update {
 		|obj, changed ...args|
 		updateFunc.value(reciever, obj, changed, args);
+	}
+
+	connectionTraceString {
+		|what|
+		^"%(%(%).%)".format(this.class, reciever.class, reciever.identityHash, methodName)
 	}
 }
 
@@ -580,7 +799,7 @@ SynthValueMapSlot : SynthMultiArgSlot {
 	}
 }
 
-DeferredUpdater : ForwardingSlot {
+DeferredUpdater : UpdateForwarder {
 	var clock, force, delta;
 
 	*new {
@@ -607,24 +826,51 @@ DeferredUpdater : ForwardingSlot {
 	}
 }
 
-CollapsedUpdater : DeferredUpdater {
-	var deferredCall;
+CollapsedUpdater : UpdateForwarder {
+	var clock, force, delta;
+	var deferredUpdate;
+	var holdUpdates=false;
+
+	*new {
+		|delta=0, clock=(AppClock), force=true|
+		^super.new.init(delta, clock, force)
+	}
+
+	init {
+		|inDelta, inClock, inForce|
+		clock = inClock;
+		force = inForce;
+		delta = inDelta;
+	}
+
+	deferIfNeeded {
+		|func|
+		if ((thisThread.clock == clock) && force.not) {
+			func.value
+		} {
+			clock.sched(0, func);
+		}
+	}
 
 	update {
 		|object, what ...args|
-		if ((thisThread.clock == clock) || force.not) {
-			deferredCall = nil;
-			super.update(object, what, *args);
+		if (holdUpdates) {
+			deferredUpdate = [object, what, args];
 		} {
-			if (deferredCall.isNil) {
-				clock.sched(delta, {
-					var tmpDeferredCall = deferredCall;
-					deferredCall = nil;
-					super.update(tmpDeferredCall[0], tmpDeferredCall[1], *tmpDeferredCall[2]);
-				})
+			holdUpdates = true;
+
+			this.deferIfNeeded {
+				super.update(object, what, *args);
 			};
 
-			deferredCall = [object, what, args];
+			clock.sched(delta, {
+				holdUpdates = false;
+				if (deferredUpdate.notNil) {
+					var tmpdeferredUpdate = deferredUpdate;
+					deferredUpdate = nil;
+					this.update(tmpdeferredUpdate[0], tmpdeferredUpdate[1], *tmpdeferredUpdate[2]);
+				};
+			})
 		}
 	}
 }
@@ -670,7 +916,7 @@ BusUpdater : PeriodicUpdater {
 	}
 }
 
-ControlValue {
+AbstractControlValue {
 	classvar <>defaultValue, <>defaultSpec;
 	var <value, <spec;
 
@@ -716,7 +962,7 @@ ControlValue {
 	}
 }
 
-NumericControlValue : ControlValue {
+NumericControlValue : AbstractControlValue {
 	*initClass {
 		Class.initClassTree(Spec);
 
@@ -762,9 +1008,11 @@ MIDIControlValue : NumericControlValue {
 
 GlobalConnections {
 	classvar objKeyDict;
+	classvar objDict;
 
 	*initClass {
 		objKeyDict = IdentityDictionary();
+		objDict = IdentityDictionary();
 	}
 
 	*forObjectKey {
@@ -802,13 +1050,16 @@ GlobalConnections {
 	}
 
 	connectTo {
-		|dependant, autoConnect=true|
-		^Connection(this, dependant, autoConnect);
-	}
-
-	addConnection {
-		|dep|
-		^this.connectTo(dep)
+		|...dependants|
+		var autoConnect = if (dependants.last.isKindOf(Boolean)) { dependants.pop() } { true };
+		if (dependants.size == 1) {
+			^Connection(this, dependants[0], autoConnect);
+		} {
+			^CollectionList(dependants.collect {
+				|dependant|
+				Connection(this, dependant, autoConnect)
+			})
+		}
 	}
 
 	signal {
@@ -816,14 +1067,16 @@ GlobalConnections {
 		if (keyOrFunc.isNil) {
 			^this
 		} {
-			^GlobalConnections.forObjectKey(this, keyOrFunc, {
-				if (keyOrFunc.isKindOf(Symbol)) {
-					this.connectTo(UpdateKeyFilter(keyOrFunc));
-				} {
-					this.connectTo(UpdateFilter(keyOrFunc));
-				}
-			}).connect()
+			if (keyOrFunc.isKindOf(Symbol)) {
+				^UpdateDispatcher(this).at(keyOrFunc);
+			} {
+				^this.connectTo(UpdateFilter(keyOrFunc));
+			}
 		}
+	}
+
+	connectionTraceString {
+		^"%(%)".format(this.class, this.identityHash)
 	}
 }
 

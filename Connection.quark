@@ -1,16 +1,15 @@
 (
-          name: "",
-       summary: "",
-        author: "",
-     copyright: "",
-       license: "",
+          name: "Connection",
+       summary: "A signals & slots library, for easily creating connections between SC objects and UI.",
+        author: "scott@artificia.org",
+     copyright: "Frank Scott Carver, 2016",
+       license: "MIT",
        version: "0.0.1",
         schelp: "",
           test: "",
-           url: "",
+           url: "http://github.com/scztt/Connection.quark",
   dependencies: [
-
+              		"Singleton"
                 ],
-  isCompatible: false,
          since: ""
 )
