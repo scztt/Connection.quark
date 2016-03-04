@@ -833,6 +833,24 @@ DeferredUpdater : UpdateForwarder {
 	}
 }
 
+OneShotUpdater : UpdateForwarder {
+	var <>connection;
+
+	*new {
+		|connection|
+		^super.new.connection_(connection)
+	}
+
+	update {
+		|object, what ...args|
+		protect {
+			super.update(object, what, *args);
+		} {
+			connection.disconnect();
+		}
+	}
+}
+
 CollapsedUpdater : UpdateForwarder {
 	var clock, force, delta;
 	var deferredUpdate;
