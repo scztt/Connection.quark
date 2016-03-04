@@ -333,46 +333,44 @@ ViewValueUpdater {
 
 	*initClass {
 		funcs = MultiLevelIdentityDictionary();
-		valueSignalFunc = {
-			|view|
-			view.changed(\value, view.value);
-		};
 		onCloseFunc = {
-			|view|
-			ViewValueUpdater.disable(view);
+			|view, actionName, func|
+			ViewValueUpdater.disable(view, actionName, func);
 		};
 	}
 
-	actionFunc {
-		|propertyName, signalName|
-		var func = funcs.at(actionName, propertyName, signalName);
+	*actionFunc {
+		|propertyName\value, signalName=\value|
+		var func = funcs.at(propertyName, signalName);
 		if (func.isNil) {
-			func = "{ |view ...args| }"
-			funcs.put(actionName, propertyName, signalName, )
+			func = "{ |view ...args| view.changed('%', view.%) }".format(signalName, propertyName).interpret;
+			funcs.put(propertyName, signalName, func);
 		};
+		^func;
 	}
 
 	*isConnected {
-		|view|
+		|view, actionName, actionFunc|
 		var isConnected = false;
-		isConnected == isConnected || (view.action == valueSignalFunc);
-		if (view.action.isKindOf(FunctionList)) {
-			isConnected = isConnected || view.action.array.includes(valueSignalFunc);
+		isConnected == isConnected || (view.perform(actionName) == actionFunc);
+		if (view.perform(actionName).isKindOf(FunctionList)) {
+			isConnected = isConnected || view.perform(actionName).array.includes(actionFunc);
 		};
 		^isConnected;
 	}
 
 	*enable {
-		|view|
-		if (this.isConnected(view).not) {
-			view.action = view.action.addFunc(valueSignalFunc);
-			view.onClose = view.onClose.add(onCloseFunc)
+		|view, actionName=\action, propertyName=\value, signalName=\value|
+		var func = this.actionFunc(propertyName, signalName);
+		if (this.isConnected(view, actionName, func).not) {
+			view.perform(actionName.asSetter, view.perform(actionName).addFunc(func));
+			view.onClose = view.onClose.addFunc(onCloseFunc.value(_, actionName, func));
 		}
 	}
 
 	*disable {
-		|view|
-		view.action = view.action.removeFunc(valueSignalFunc);
+		|view, actionName, func|
+		view.perform(actionName.asSetter, view.perform(actionName).removeFunc(func));
 	}
 }
 
