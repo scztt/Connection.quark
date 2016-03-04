@@ -612,70 +612,48 @@ MethodSlot {
 		updateFunc = MethodSlot.makeUpdateFunc(reciever, methodName, argOrder);
 	}
 
-	*parseMethodSignature {
-		|method|
-		var args=[];
-
-		if (method.isKindOf(String)) {
-			var match = method.findRegexp("(\\w+)\\((.*)\\)");
-			if (match.notEmpty) {
-				method = match[1][1].asSymbol;
-				args = match[2][1].split(",").collect(_.trim).collect(_.asSymbol);
-			} {
-				method = method.asSymbol;
-			}
-		};
-
-		^[method, args]
-	}
-
 	*makeUpdateFunc {
 		|reciever, methodName, argOrder|
-		var inArgString, argString;
-		var method, numAdditionalArgs;
-		var updateFunc;
-		var possibleArgs = ['obj', 'changed', '*args', 'args', 'value'];
+		var argString, callString;
+		var possibleArgs = ['object', 'changed', '*args', 'args', 'value'];
 
-		if (argOrder.size == 0) {
-			#methodName, argOrder = this.parseMethodSignature(methodName);
+		if (methodName.isKindOf(String) && argOrder.isEmpty) {
+			// Should be of the form e.g. "someMethod(value, arg[0])"
+			callString = methodName;
+			methodName = methodName.split($()[0].asSymbol; // guess the method name - used later for validation
+		} {
+			argOrder.do {
+				|a|
+				if (a.isInteger.not && possibleArgs.includes(a).not) {
+					Error("Can't handle arg '%' - must be one of: %.".format(a, possibleArgs.join(", "))).throw
+				}
+			};
+
+			if (argOrder.isEmpty) {
+				argOrder = ['object', 'changed', '*args'];
+			};
+
+			argString = argOrder.collect({
+				|a|
+				if (a.isInteger) {
+					"args[%]".format(a)
+				} {
+					a.asString
+				}
+			}).join(", ");
+			callString = "%(%)".format(methodName, argString);
 		};
 
 		if (reciever.respondsTo(methodName).not && reciever.tryPerform(\know).asBoolean.not) {
 			Exception("Object of type % doesn't respond to %.".format(reciever.class, methodName)).throw;
 		};
 
-		argOrder.do {
-			|a|
-			if (a.isInteger.not) {
-				if (possibleArgs.includes(a).not) {
-					Error("Can't handle arg '%' - must be one of: %.".format(a, possibleArgs.join(", "))).throw
-				}
-			}
-		};
-
-		if (argOrder.isEmpty) {
-			argOrder = ['obj', 'changed', '*args'];
-		};
-
-		argString = argOrder.collect({
-			|a|
-			if (a.isInteger) {
-				"args[%]".format(a)
-			} {
-				if (a == \value) {
-					"args[0]"
-				} {
-					a.asString
-				}
-			}
-		}).join(", ");
-
-		^updateFunc = "{ |reciever, obj, changed, args| reciever.%(%) }".format(methodName, argString).interpret;
+		^"{ |reciever, object, changed, args| var value = args[0]; reciever.% }".format(callString).interpret;
 	}
 
 	update {
-		|obj, changed ...args|
-		updateFunc.value(reciever, obj, changed, args);
+		|object, changed ...args|
+		updateFunc.value(reciever, object, changed, args);
 	}
 
 	connectionTraceString {
