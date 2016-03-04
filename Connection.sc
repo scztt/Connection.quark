@@ -578,6 +578,11 @@ UpdateDispatcher {
 		})
 	}
 
+	*clear {
+		|object|
+		dispatcherDict[object] !? { |d| d.clear };
+	}
+
 	init {
 		|object|
 		connection = object.connectTo(this);
@@ -587,27 +592,49 @@ UpdateDispatcher {
 	at {
 		|key|
 		^dispatchTable.atFail(key, {
-			var dep = UpdateForwarder();
-			dispatchTable[key] = dep;
-			dep;
+			// We want a connection to represent our dispatcher->(named signal)
+			// but we want to manage ourselves - so no need to connect this.
+			var connection = Connection.basicNew(this, UpdateForwarder(), true);
+			dispatchTable[key] = connection;
+			connection;
 		})
 	}
 
+	remove {
+		|key|
+		dispatchTable.removeAt(key);
+		if (dispatchTable.size == 0) {
+			this.clear();
+		}
+	}
+
 	dependants {
-		^(super.dependants ++ dispatchTable.values);
+		^dispatchTable !? { dispatchTable.values.collect(_.dependant) } ?? []
 	}
 
 	update {
-		|obj, what ...args|
-		dispatchTable[what] !? {
-			|forwarder|
-			forwarder.update(obj, what, *args);
+		|obj, changed ...args|
+		dispatchTable[changed] !? {
+			|connection|
+			connection.dependant.update(obj, changed, *args);
 		}
+	}
+
+	connectionCleared {
+		|connection|
+		dispatchTable.findKeyForValue(connection) !? (this.remove(_));
+	}
+
+	clear {
+		dispatcherDict[connection.object] = nil;
+		connection.clear;
+		dispatchTable.values.do(_.releaseDependants);
+		connection = dispatchTable = nil;
 	}
 
 	connectionTraceString {
 		|what|
-		^dispatchTable[what].connectionTraceString ?? { "%(%) - no target".format(this.class, this.identityHash) };
+		^dispatchTable[what].dependant.connectionTraceString ?? { "%(%) - no target".format(this.class, this.identityHash) };
 	}
 }
 
