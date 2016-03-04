@@ -1,6 +1,6 @@
 (
           name: "Connection",
-       summary: "A signals & slots library, for easily creating connections between SC objects and UI.",
+       summary: "A library for creating and managing connections and synchronization between SC objects.",
         author: "scott@artificia.org",
      copyright: "Frank Scott Carver, 2016",
        license: "MIT",
