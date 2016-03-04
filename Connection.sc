@@ -302,10 +302,13 @@ Connection {
 
 	chain {
 		|newDependant|
-		var oldObject, connection;
 		var wasTracing = traceConnection.notNil;
-		this.trace(false);
 
+		// We want to insert newDependant in between our current object and dependant.
+		// I.e.: this.object -> newDependant -> this.dependant
+		// The current (this) connection will represent the [newDependant -> this.dependant]
+		// portion, and we construct and return a new connection for [this.object -> newDependant].
+		this.trace(false);
 		this.disconnectWith({
 			object = object.connectTo(newDependant);
 		});
