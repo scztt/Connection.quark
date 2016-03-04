@@ -801,7 +801,7 @@ DeferredUpdater : UpdateForwarder {
 
 	update {
 		|object, what ...args|
-		if ((thisThread.clock == clock) || force.not) {
+		if ((thisThread.clock == clock) && force.not) {
 			super.update(object, what, *args);
 		} {
 			clock.sched(delta, {
