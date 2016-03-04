@@ -344,14 +344,14 @@ Connection {
 	}
 }
 
-ViewValueUpdater {
+ViewActionUpdater {
 	classvar funcs, onCloseFunc;
 
 	*initClass {
 		funcs = MultiLevelIdentityDictionary();
 		onCloseFunc = {
 			|view, actionName, func|
-			ViewValueUpdater.disable(view, actionName, func);
+			ViewActionUpdater.disable(view, actionName, func);
 		};
 	}
 
@@ -1139,9 +1139,9 @@ GlobalConnections {
 	updateOnAction {
 		|should=true|
 		if (should) {
-			ViewValueUpdater.enable(this);
+			ViewActionUpdater.enable(this);
 		} {
-			ViewValueUpdater.disable(this);
+			ViewActionUpdater.disable(this);
 		}
 	}
 }
