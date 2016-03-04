@@ -24,6 +24,10 @@ ConnectionList {
 		list.do(_.disconnect);
 	}
 
+	connectionCleared {
+		this.clear
+	}
+
 	clear {
 		list.do(_.clear);
 		list = nil;
@@ -196,8 +200,13 @@ Connection {
 		this.connected_(false)
 	}
 
+	connectionCleared {
+		this.clear();
+	}
+
 	clear {
 		this.disconnect();
+		object.connectionCleared(this);
 		object = dependant = nil;
 	}
 
@@ -1076,6 +1085,8 @@ GlobalConnections {
 	connectionTraceString {
 		^"%(%)".format(this.class, this.identityHash)
 	}
+
+	connectionCleared {}
 }
 
 +Node {
