@@ -338,6 +338,10 @@ Connection {
 		|delta=0, clock=(AppClock), force=true|
 		this.chain(CollapsedUpdater(delta, clock, force))
 	}
+
+	oneShot {
+		this.chain(OneShotUpdater(this));
+	}
 }
 
 ViewValueUpdater {
