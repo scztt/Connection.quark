@@ -84,8 +84,8 @@ ConnectionList {
 	}
 
 	defer {
-		|clock, force, delay|
-		list.do(_.defer(clock, force, delay))
+		|delta=0, clock=(AppClock), force=false|
+		list.do(_.defer(delta, clock, force))
 	}
 
 	collapse {
