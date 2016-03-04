@@ -1099,7 +1099,7 @@ GlobalConnections {
 		if (dependants.size == 1) {
 			^Connection(this, dependants[0], autoConnect);
 		} {
-			^CollectionList(dependants.collect {
+			^ConnectionList(dependants.collect {
 				|dependant|
 				Connection(this, dependant, autoConnect)
 			})
