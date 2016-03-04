@@ -389,26 +389,33 @@ UpdateForwarder {
 	*new {
 		^super.new.prInitDependants;
 	}
+
 	prInitDependants{
 		dependants = IdentitySet();
 	}
+
 	changed { arg what ... moreArgs;
 		dependants.do({ arg item;
 			item.update(this, what, *moreArgs);
 		});
 	}
+
 	addDependant { arg dependant;
 		dependants.add(dependant);
 	}
+
 	removeDependant { arg dependant;
 		dependants.remove(dependant);
 	}
+
 	release {
 		this.releaseDependants;
 	}
+
 	releaseDependants {
 		dependants.clear();
 	}
+
 	update {
 		|object, what ...args|
 		dependants.do {
