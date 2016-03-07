@@ -113,3 +113,29 @@ ValueSlot : MethodSlot {
 		^super.new(obj, setter, \value)
 	}
 }
+
+SynthArgSlot {
+	var <synth, <>argName, synthConn;
+
+	*new {
+		|synth, argName|
+		^super.newCopyArgs(synth, argName).connectSynth
+	}
+
+	connectSynth {
+		synth.register;
+		synthConn = synth.signal(\n_end).connectTo(this.methodSlot(\disconnectSynth))
+	}
+
+	disconnectSynth {
+		synthConn.free();
+		synth = argName = synthConn = nil;
+	}
+
+	update {
+		|obj, what, value|
+		if (synth.notNil) {
+			synth.set(argName, value);
+		}
+	}
+}
