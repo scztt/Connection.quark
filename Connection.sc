@@ -1060,33 +1060,6 @@ MIDIControlValue : NumericControlValue {
 	}
 }
 
-GlobalConnections {
-	classvar objKeyDict;
-	classvar objDict;
-
-	*initClass {
-		objKeyDict = IdentityDictionary();
-		objDict = IdentityDictionary();
-	}
-
-	*forObjectKey {
-		|obj, key, failFunc|
-		var objDict;
-
-		objDict = objKeyDict.atFail(obj, {
-			var new = IdentityDictionary();
-			objKeyDict[obj] = new;
-			new;
-		});
-
-		^objDict.atFail(key, {
-			var connection = failFunc.value();
-			objDict[key] = connection;
-			connection;
-		});
-	}
-}
-
 +Object {
 	valueSlot {
 		|setter=\value_|
