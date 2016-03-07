@@ -344,4 +344,9 @@ ConnectionList {
 		|clock, force, delay|
 		list.do(_.collapse(clock, force, delay))
 	}
+
+	oneShot {
+		|shouldFree=false|
+		list.do(_.oneShot(shouldFree))
+	}
 }
