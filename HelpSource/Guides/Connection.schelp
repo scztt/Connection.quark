@@ -9,6 +9,7 @@ It is built on top of (and is compatible with) the existing link::Classes/Object
 
 warning::
 The Connection quark is under active development. Most API's, object names, etc. are subject to change or removal.
+Please send feedback, bug reports, feature ideas to Scott Carver <scott@artificia.org>.
 ::
 
 section::Introduction
