@@ -7,4 +7,10 @@
 			ViewActionUpdater.disable(this);
 		}
 	}
+
+	signal {
+		|key|
+		this.updateOnAction(); // automatically update on action if we connect to a View
+		^super.signal(key);
+	}
 }
