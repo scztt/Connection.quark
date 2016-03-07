@@ -11,6 +11,15 @@ ConnectionList {
 		^super.newCopyArgs((list ?? List()).asList)
 	}
 
+	*makeWith {
+		|func|
+		Connection.prBeforeCollect();
+		protect {
+			func.value()
+		} {
+			^Connection.prAfterCollect();
+		}
+	}
 	connected_{
 		|connect|
 		list.do(_.connected_(connect));
@@ -124,16 +133,6 @@ Connection {
 			};
 			traceAll = wasTracingAll;
 		})
-	}
-
-	*collect {
-		|func|
-		this.prBeforeCollect();
-		protect {
-			func.value()
-		} {
-			^this.prAfterCollect();
-		}
 	}
 
 	*prBeforeCollect {
