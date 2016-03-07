@@ -1,113 +1,3 @@
-ConnectionList {
-	var <list;
-
-	*newFrom {
-		|connectionList|
-		^this.newCopyArgs(connectionList.list);
-	}
-
-	*new {
-		|list|
-		^super.newCopyArgs((list ?? List()).asList)
-	}
-
-	*makeWith {
-		|func|
-		Connection.prBeforeCollect();
-		protect {
-			func.value()
-		} {
-			^Connection.prAfterCollect();
-		}
-	}
-
-	connected_{
-		|connect|
-		list.do(_.connected_(connect));
-	}
-
-	connect {
-		list.do(_.connect);
-	}
-
-	disconnect {
-		list.do(_.disconnect);
-	}
-
-	connectionFreed {
-		this.free;
-	}
-
-	free {
-		list.do(_.free);
-		list = nil;
-	}
-
-	disconnectWith {
-		|func|
-		var wasConnected = list.select(_.connected);
-
-		this.disconnect();
-
-		^func.protect({
-			wasConnected.do(_.connect)
-		});
-	}
-
-	trace {
-		|shouldTrace=true|
-		list.do(_.trace(shouldTrace));
-	}
-
-	dependants {
-		^list.collect({ |o| o.dependants.asList }).flatten;
-	}
-
-	addDependant {
-		|dep|
-		list.do(_.addDependant(dep));
-	}
-
-	removeDependant {
-		|dep|
-		list.do(_.removeDependant(dep));
-	}
-
-	releaseDependants {
-		list.do(_.releaseDependants());
-	}
-
-	connectTo {
-		|nextDependant, autoConnect=true|
-		^Connection(this, nextDependant, autoConnect);
-	}
-
-	chain {
-		|newDependant|
-		list.do(_.chain(newDependant));
-	}
-
-	filter {
-		|filter|
-		list.do(_.filter(filter));
-	}
-
-	transform {
-		|func|
-		list.do(_.transform(func))
-	}
-
-	defer {
-		|delta=0, clock=(AppClock), force=false|
-		list.do(_.defer(delta, clock, force))
-	}
-
-	collapse {
-		|clock, force, delay|
-		list.do(_.collapse(clock, force, delay))
-	}
-}
-
 Connection {
 	classvar <collectionStack;
 	classvar <tracing, <>traceAll=false;
@@ -118,56 +8,8 @@ Connection {
 	var <traceConnection;
 
 	*initClass {
-		Class.initClassTree(MethodSlot);
 		tracing = List();
 	}
-
-	*findReachableConnections {
-		// This should operate as a *loose* leak checker. It visits known root-level objects that could contain
-		// connections or temporary connection-related objects, and collects them. If connections have been properly
-		// cleaned up, this should return an empty list. We don't bother drilling down into Connection-related
-		// objects, since we basically only care if this list is empty or not.
-		var foundObjects = List[];
-		var toIterate = List();
-		var hasIterated = IdentitySet();
-		var itemTypes = [ViewActionUpdater, UpdateForwarder, UpdateTracer, UpdateChannel, UpdateBroadcaster, UpdateFilter, UpdateTransform, UpdateDispatcher, MethodSlot, SynthArgSlot, SynthMultiArgSlot, PeriodicUpdater];
-
-		toIterate.addAll([
-			Object.dependantsDictionary,
-			Connection.tracing, Connection.collectionStack,
-			UpdateDispatcher.dispatcherDict.keys
-		].flatten);
-
-		while { toIterate.notEmpty } {
-			var iter = toIterate.pop();
-			iter !? {
-				toIterate.size.postln;
-				0.0001.yield;
-				hasIterated.add(iter);
-
-				if (iter.isKindOf(Collection)) {
-					var coll = iter;
-					if (iter.isKindOf(Dictionary)) {
-						coll = coll.keys.asArray ++ coll.values.asArray
-					};
-					coll.do {
-						|item|
-						if (hasIterated.includes(item).not) {
-							toIterate.add(item);
-						}
-					}
-				} {
-					if (itemTypes.any({ |c| iter.isKindOf(c) })) {
-						foundObjects.add(iter);
-					}
-				}
-			}
-		};
-
-		^foundObjects
-	}
-
-
 
 	*traceWith {
 		|func|
@@ -391,5 +233,115 @@ Connection {
 	oneShot {
 		|shouldFree=false|
 		this.chain(OneShotUpdater(this, shouldFree));
+	}
+}
+
+ConnectionList {
+	var <list;
+
+	*newFrom {
+		|connectionList|
+		^this.newCopyArgs(connectionList.list);
+	}
+
+	*new {
+		|list|
+		^super.newCopyArgs((list ?? List()).asList)
+	}
+
+	*makeWith {
+		|func|
+		Connection.prBeforeCollect();
+		protect {
+			func.value()
+		} {
+			^Connection.prAfterCollect();
+		}
+	}
+
+	connected_{
+		|connect|
+		list.do(_.connected_(connect));
+	}
+
+	connect {
+		list.do(_.connect);
+	}
+
+	disconnect {
+		list.do(_.disconnect);
+	}
+
+	connectionFreed {
+		this.free;
+	}
+
+	free {
+		list.do(_.free);
+		list = nil;
+	}
+
+	disconnectWith {
+		|func|
+		var wasConnected = list.select(_.connected);
+
+		this.disconnect();
+
+		^func.protect({
+			wasConnected.do(_.connect)
+		});
+	}
+
+	trace {
+		|shouldTrace=true|
+		list.do(_.trace(shouldTrace));
+	}
+
+	dependants {
+		^list.collect({ |o| o.dependants.asList }).flatten;
+	}
+
+	addDependant {
+		|dep|
+		list.do(_.addDependant(dep));
+	}
+
+	removeDependant {
+		|dep|
+		list.do(_.removeDependant(dep));
+	}
+
+	releaseDependants {
+		list.do(_.releaseDependants());
+	}
+
+	connectTo {
+		|nextDependant, autoConnect=true|
+		^Connection(this, nextDependant, autoConnect);
+	}
+
+	chain {
+		|newDependant|
+		list.do(_.chain(newDependant));
+	}
+
+	filter {
+		|filter|
+		list.do(_.filter(filter));
+	}
+
+	transform {
+		|func|
+		list.do(_.transform(func))
+	}
+
+	defer {
+		|delta=0, clock=(AppClock), force=false|
+		list.do(_.defer(delta, clock, force))
+	}
+
+	collapse {
+		|clock, force, delay|
+		list.do(_.collapse(clock, force, delay))
 	}
 }
