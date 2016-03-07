@@ -240,8 +240,8 @@ Connection {
 		if (shouldTrace) {
 			traceConnection ?? {
 				traceConnection = UpdateTracer(object, dependant, this);
-				object.removeDependant(dependant);
 				object.addDependant(traceConnection);
+				object.removeDependant(dependant);
 				tracing.add(this);
 			}
 		} {
