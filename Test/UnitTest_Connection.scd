@@ -73,7 +73,7 @@ UnitTest.reset; UnitTestScript("Connection", thisProcess.nowExecutingPath).runSc
 		object[1].connectTo(collectFunc);
 	};
 
-	test.assertEquals(connection.list.size, 2, "ConnectionList.makeWith collects properly.");
+	test.assertEquals(connection.size, 2, "ConnectionList.makeWith collects properly.");
 
 	clear.();
 	connection.disconnect();
