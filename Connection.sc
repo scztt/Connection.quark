@@ -108,7 +108,7 @@ ConnectionList {
 }
 
 Connection {
-	classvar collectionStack;
+	classvar <collectionStack;
 	classvar <tracing, <>traceAll=false;
 
 	var <object, <dependant;
@@ -140,11 +140,7 @@ Connection {
 	}
 
 	*prAfterCollect {
-		var popped = collectionStack.pop();
-		if (collectionStack.size > 1) {
-			collectionStack.last.addAll(popped);
-		};
-		^ConnectionList(popped);
+		^ConnectionList(collectionStack.pop());
 	}
 
 	*basicNew {
