@@ -237,16 +237,6 @@ Connection {
 }
 
 ConnectionList : List {
-	// *newFrom {
-	// 	|connectionList|
-	// 	^this.newCopyArgs(connectionthis.list);
-	// }
-	//
-	// *new {
-	// 	|list|
-	// 	^super.newCopyArgs((list ?? List()).asList)
-	// }
-	//
 	*makeWith {
 		|func|
 		Connection.prBeforeCollect();
