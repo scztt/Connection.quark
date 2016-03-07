@@ -33,12 +33,12 @@ ConnectionList {
 		list.do(_.disconnect);
 	}
 
-	connectionCleared {
-		this.clear
+	connectionFreed {
+		this.free;
 	}
 
-	clear {
-		list.do(_.clear);
+	free {
+		list.do(_.free);
 		list = nil;
 	}
 
@@ -199,13 +199,14 @@ Connection {
 		this.connected_(false)
 	}
 
-	connectionCleared {
-		this.clear();
+	connectionFreed {
+		this.free();
 	}
 
-	clear {
+	free {
+		this.trace(false);
 		this.disconnect();
-		object.connectionCleared(this);
+		object.connectionFreed(this);
 		object = dependant = nil;
 	}
 
