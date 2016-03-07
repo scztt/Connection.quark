@@ -9,6 +9,11 @@
 		^MethodSlot(this, method, *argOrder)
 	}
 
+	methodSlots {
+		|...methods|
+		^methods.collect(this.methodSlot(_))
+	}
+
 	connectTo {
 		|...dependants|
 		var autoConnect = if (dependants.last.isKindOf(Boolean)) { dependants.pop() } { true };
@@ -43,6 +48,11 @@
 				^this.connectTo(UpdateFilter(keyOrFunc));
 			}
 		}
+	}
+
+	signals {
+		|...keyOrFuncs|
+		^keyOrFuncs.collect(this.signal(_));
 	}
 
 	connectionTraceString {
