@@ -270,9 +270,9 @@ Connection {
 
 	addDependant {
 		|dep|
-		// if (dependant.dependants.isEmpty) {
-		// 	this.connect();
-		// };
+		if (dependant.dependants.size == 0) {
+			this.connect();
+		};
 
 		dependant.addDependant(dep);
 	}
@@ -281,9 +281,9 @@ Connection {
 		|dep|
 		dependant.removeDependant(dep);
 
-		// if (dependant.dependants.isEmpty) {
-		// 	this.disconnect();
-		// }
+		if (dependant.dependants.size == 0) {
+			this.disconnect();
+		}
 	}
 
 	releaseDependants {
