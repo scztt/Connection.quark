@@ -47,9 +47,8 @@ UpdateDispatcher {
 
 	init {
 		|object|
-		// "Creating dispatcher %".format(this.identityHash).postln;
-		connection = object.connectTo(this);
 		dispatchTable = IdentityDictionary();
+		connection = object.connectTo(this);
 	}
 
 	free {
