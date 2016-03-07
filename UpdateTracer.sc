@@ -8,7 +8,7 @@ UpdateTracer {
 	}
 
 	init {
-		connected = upstream.dependants.includes(wrappedObject);
+		connected = upstream.dependants !? (_.includes(wrappedObject)) ?? false;
 	}
 
 	update {
