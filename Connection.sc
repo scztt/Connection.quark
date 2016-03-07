@@ -329,8 +329,8 @@ ConnectionList : List {
 	}
 
 	collapse {
-		|clock, force, delay|
-		this.do(_.collapse(clock, force, delay))
+		|delta=0, clock=(AppClock), force=true|
+		this.do(_.collapse(delta, clock, force))
 	}
 
 	oneShot {
