@@ -1,4 +1,4 @@
-+Collection {
++SequenceableCollection {
 	connectAll {
 		|dependant|
 		^ConnectionList.newFrom(this.collect(_.connectTo(dependant)))
