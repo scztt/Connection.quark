@@ -44,7 +44,7 @@ ConnectionList {
 
 	disconnectWith {
 		|func|
-		var wasConnected = list.filter(_.connected);
+		var wasConnected = list.select(_.connected);
 
 		this.disconnect();
 
