@@ -4,12 +4,13 @@
         author: "scott@artificia.org",
      copyright: "Frank Scott Carver, 2016",
        license: "MIT",
-       version: "0.0.1",
+       version: "0.0.2-alpha",
         schelp: "",
           test: "",
            url: "http://github.com/scztt/Connection.quark",
   dependencies: [
               		"Singleton"
                 ],
+  isCompatible: true ,
          since: ""
 )
