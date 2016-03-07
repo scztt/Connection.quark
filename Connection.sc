@@ -404,20 +404,34 @@ UpdateForwarder {
 	}
 
 	addDependant { arg dependant;
+		if (dependants.isNil) {
+			dependants = IdentitySet();
+			this.onDependantsNotEmpty
+		};
+
 		dependants.add(dependant);
 	}
 
 	removeDependant { arg dependant;
 		dependants.remove(dependant);
+		if (dependants.size == 0) {
+			dependants = nil;
+			this.onDependantsEmpty;
+		};
 	}
 
 	release {
-		this.releaseDependants;
+		this.releaseDependants();
 	}
 
 	releaseDependants {
 		dependants.clear();
+		this.onDependantsEmpty();
 	}
+
+	onDependantsEmpty {}
+
+	onDependantsNotEmpty {}
 
 	update {
 		|object, what ...args|
