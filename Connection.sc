@@ -21,7 +21,7 @@ Connection {
 			collected = Connection.collect(func);
 		}, {
 			if (wasTracingAll.not) {
-				collected.list.do(_.trace(false));
+				collected.do(_.trace(false));
 			};
 			traceAll = wasTracingAll;
 		})
@@ -32,7 +32,7 @@ Connection {
 	}
 
 	*prAfterCollect {
-		^ConnectionList(collectionStack.pop());
+		^ConnectionList.newFrom(collectionStack.pop());
 	}
 
 	*basicNew {
@@ -236,19 +236,17 @@ Connection {
 	}
 }
 
-ConnectionList {
-	var <list;
-
-	*newFrom {
-		|connectionList|
-		^this.newCopyArgs(connectionList.list);
-	}
-
-	*new {
-		|list|
-		^super.newCopyArgs((list ?? List()).asList)
-	}
-
+ConnectionList : List {
+	// *newFrom {
+	// 	|connectionList|
+	// 	^this.newCopyArgs(connectionthis.list);
+	// }
+	//
+	// *new {
+	// 	|list|
+	// 	^super.newCopyArgs((list ?? List()).asList)
+	// }
+	//
 	*makeWith {
 		|func|
 		Connection.prBeforeCollect();
@@ -261,15 +259,15 @@ ConnectionList {
 
 	connected_{
 		|connect|
-		list.do(_.connected_(connect));
+		this.do(_.connected_(connect));
 	}
 
 	connect {
-		list.do(_.connect);
+		this.do(_.connect);
 	}
 
 	disconnect {
-		list.do(_.disconnect);
+		this.do(_.disconnect);
 	}
 
 	connectionFreed {
@@ -277,13 +275,13 @@ ConnectionList {
 	}
 
 	free {
-		list.do(_.free);
-		list = nil;
+		this.do(_.free);
+		this.clear();
 	}
 
 	disconnectWith {
 		|func|
-		var wasConnected = list.select(_.connected);
+		var wasConnected = this.select(_.connected);
 
 		this.disconnect();
 
@@ -294,25 +292,25 @@ ConnectionList {
 
 	trace {
 		|shouldTrace=true|
-		list.do(_.trace(shouldTrace));
+		this.do(_.trace(shouldTrace));
 	}
 
 	dependants {
-		^list.collect({ |o| o.dependants.asList }).flatten;
+		^this.collect({ |o| o.dependants.asList }).flatten;
 	}
 
 	addDependant {
 		|dep|
-		list.do(_.addDependant(dep));
+		this.do(_.addDependant(dep));
 	}
 
 	removeDependant {
 		|dep|
-		list.do(_.removeDependant(dep));
+		this.do(_.removeDependant(dep));
 	}
 
 	releaseDependants {
-		list.do(_.releaseDependants());
+		this.do(_.releaseDependants());
 	}
 
 	connectTo {
@@ -322,31 +320,31 @@ ConnectionList {
 
 	chain {
 		|newDependant|
-		list.do(_.chain(newDependant));
+		this.do(_.chain(newDependant));
 	}
 
 	filter {
 		|filter|
-		list.do(_.filter(filter));
+		this.do(_.filter(filter));
 	}
 
 	transform {
 		|func|
-		list.do(_.transform(func))
+		this.do(_.transform(func))
 	}
 
 	defer {
 		|delta=0, clock=(AppClock), force=false|
-		list.do(_.defer(delta, clock, force))
+		this.do(_.defer(delta, clock, force))
 	}
 
 	collapse {
 		|clock, force, delay|
-		list.do(_.collapse(clock, force, delay))
+		this.do(_.collapse(clock, force, delay))
 	}
 
 	oneShot {
 		|shouldFree=false|
-		list.do(_.oneShot(shouldFree))
+		this.do(_.oneShot(shouldFree))
 	}
 }
