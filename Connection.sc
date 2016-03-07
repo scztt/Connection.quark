@@ -713,33 +713,40 @@ MethodSlot {
 	}
 }
 
-MultiMethodSlot {
-	var <object, <mapFunction;
+MethodSlotUI : MethodSlot {
+	classvar deferList, deferFunc;
 
-	*new {
-		|obj ...argsMap|
-		^super.newCopyArgs(obj).init(argsMap)
+	*initClass {
+		deferList = List();
 	}
 
-	init {
-		|argsMap|
-		if (argsMap.size == 0) {
-			mapFunction = {|k| k};
-		} {
-			if ((argsMap.size == 1) && argsMap[0].isFunction) {
-				mapFunction = argsMap[0]
-			} {
-				argsMap = argsMap.copy.asDict;
-				mapFunction = argsMap[_];
-			}
+	*doDeferred {
+		var tmpList = deferList;
+		deferList = List(tmpList.size);
+		deferFunc = nil;
+
+		tmpList.do {
+			|argsList|
+			argsList[0].value(*argsList[1]);
 		}
 	}
 
+	*deferUpdate {
+		|updateFunc, args|
+		deferList.add([updateFunc, args]);
+		deferFunc ?? {
+			deferFunc = { MethodSlotUI.doDeferred }.defer
+		}
+	}
+
+	*prNew { ^super.prNew }
+
 	update {
-		|obj, what ...args|
-		var method = mapFunction.value(what);
-		if (method.notNil) {
-			object.perform(method, obj, what, *args);
+		|object, changed ...args|
+		if (this.canCallOS) {
+			updateFunc.value(reciever, object, changed, args);
+		} {
+			this.class.deferUpdate(updateFunc, [reciever, object, changed, args])
 		}
 	}
 }
