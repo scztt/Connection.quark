@@ -112,12 +112,61 @@ Connection {
 	classvar <tracing, <>traceAll=false;
 
 	var <object, <dependant;
+
 	var connected = false;
 	var <traceConnection;
 
 	*initClass {
+		Class.initClassTree(MethodSlot);
 		tracing = List();
 	}
+
+	*findReachableConnections {
+		// This should operate as a *loose* leak checker. It visits known root-level objects that could contain
+		// connections or temporary connection-related objects, and collects them. If connections have been properly
+		// cleaned up, this should return an empty list. We don't bother drilling down into Connection-related
+		// objects, since we basically only care if this list is empty or not.
+		var foundObjects = List[];
+		var toIterate = List();
+		var hasIterated = IdentitySet();
+		var itemTypes = [ViewActionUpdater, UpdateForwarder, UpdateTracer, UpdateChannel, UpdateBroadcaster, UpdateFilter, UpdateTransform, UpdateDispatcher, MethodSlot, SynthArgSlot, SynthMultiArgSlot, PeriodicUpdater];
+
+		toIterate.addAll([
+			Object.dependantsDictionary,
+			Connection.tracing, Connection.collectionStack,
+			UpdateDispatcher.dispatcherDict.keys
+		].flatten);
+
+		while { toIterate.notEmpty } {
+			var iter = toIterate.pop();
+			iter !? {
+				toIterate.size.postln;
+				0.0001.yield;
+				hasIterated.add(iter);
+
+				if (iter.isKindOf(Collection)) {
+					var coll = iter;
+					if (iter.isKindOf(Dictionary)) {
+						coll = coll.keys.asArray ++ coll.values.asArray
+					};
+					coll.do {
+						|item|
+						if (hasIterated.includes(item).not) {
+							toIterate.add(item);
+						}
+					}
+				} {
+					if (itemTypes.any({ |c| iter.isKindOf(c) })) {
+						foundObjects.add(iter);
+					}
+				}
+			}
+		};
+
+		^foundObjects
+	}
+
+
 
 	*traceWith {
 		|func|
