@@ -20,6 +20,7 @@ ConnectionList {
 			^Connection.prAfterCollect();
 		}
 	}
+
 	connected_{
 		|connect|
 		list.do(_.connected_(connect));
@@ -277,9 +278,9 @@ Connection {
 
 		"% %.signal(%) → %\t =[%]".format(
 			connectedSym++connectedSym,
-			from.connectionTraceString(what),
+			from.connectionTraceString(obj, what),
 			"\\" ++ what,
-			to.connectionTraceString(what),
+			to.connectionTraceString(obj, what),
 			(values.collect(_.asCompileString)).join(","),
 		).postln
 	}
@@ -388,7 +389,8 @@ Connection {
 	}
 
 	oneShot {
-		this.chain(OneShotUpdater(this));
+		|shouldFree=false|
+		this.chain(OneShotUpdater(this, shouldFree));
 	}
 }
 
@@ -551,30 +553,28 @@ UpdateBroadcaster : Singleton {
 	}
 }
 
-UpdateFilter {
-	var <func;
+UpdateFilter : UpdateForwarder {
+	var <>func;
 
 	*new {
 		|func|
-		^super.newCopyArgs(func)
+		^super.new.func_(func)
 	}
 
 	update {
 		|object, what ...args|
 		if (func.value(object, what, *args)) {
-			dependantsDictionary.at(this).copy.do({ arg item;
-				item.update(object, what, *args);
-			});
+			super.update(object, what, *args);
 		}
 	}
 }
 
-UpdateTransform {
-	var <func;
+UpdateTransform : UpdateForwarder {
+	var <>func;
 
 	*new {
 		|func|
-		^super.newCopyArgs(func)
+		^super.new.func_(func)
 	}
 
 	update {
@@ -582,28 +582,8 @@ UpdateTransform {
 		var argsArray = func.value(object, what, *args);
 		if (argsArray.notNil) {
 			argsArray = argsArray[0..1] ++ argsArray[2];
-			dependantsDictionary.at(this).copy.do({ arg item;
-				item.update(*argsArray);
-			});
+			super.update(*argsArray);
 		}
-	}
-}
-
-ConnectionMap : ConnectionList {
-	*new {
-		|...args|
-		var dict = IdentityDictionary.newFrom(args);
-		var transformer = UpdateTransform({
-			|obj, changed ...args|
-			var newKey = dict[obj];
-			if (newKey.notNil) {
-				[obj, newKey, args];
-			} {
-				nil;
-			}
-		});
-
-		^super.newFrom(dict.keys.connectAll(transformer))
 	}
 }
 
@@ -621,11 +601,111 @@ UpdateKeyFilter : UpdateFilter {
 	}
 }
 
+DeferredUpdater : UpdateForwarder {
+	classvar immediateDeferFunc, immediateDeferList;
+	var clock, force, delta;
+
+	*new {
+		|delta=0, clock=(AppClock), force=true|
+		^super.new.init(delta, clock, force)
+	}
+
+	init {
+		|inDelta, inClock, inForce|
+		clock = inClock;
+		force = inForce;
+		delta = inDelta;
+	}
+
+	update {
+		|object, what ...args|
+		if ((thisThread.clock == clock) && force.not) {
+			super.update(object, what, *args);
+		} {
+			clock.sched(delta, {
+				super.update(object, what, *args);
+			})
+		}
+	}
+}
+
+OneShotUpdater : UpdateForwarder {
+	var <>connection, <>shouldFree;
+
+	*new {
+		|connection, shouldFree=false|
+		^super.new.connection_(connection).shouldFree_(shouldFree)
+	}
+
+	update {
+		|object, what ...args|
+		protect {
+			super.update(object, what, *args);
+		} {
+			if (shouldFree) {
+				connection.free();
+				connection = nil;
+			} {
+				connection.disconnect();
+			}
+		}
+	}
+}
+
+CollapsedUpdater : UpdateForwarder {
+	var clock, force, delta;
+	var deferredUpdate;
+	var holdUpdates=false;
+
+	*new {
+		|delta=0, clock=(AppClock), force=true|
+		^super.new.init(delta, clock, force)
+	}
+
+	init {
+		|inDelta, inClock, inForce|
+		clock = inClock;
+		force = inForce;
+		delta = inDelta;
+	}
+
+	deferIfNeeded {
+		|func|
+		if ((thisThread.clock == clock) && force.not) {
+			func.value
+		} {
+			clock.sched(0, func);
+		}
+	}
+
+	update {
+		|object, what ...args|
+		if (holdUpdates) {
+			deferredUpdate = [object, what, args];
+		} {
+			holdUpdates = true;
+
+			this.deferIfNeeded {
+				super.update(object, what, *args);
+			};
+
+			clock.sched(delta, {
+				holdUpdates = false;
+				if (deferredUpdate.notNil) {
+					var tmpdeferredUpdate = deferredUpdate;
+					deferredUpdate = nil;
+					this.update(tmpdeferredUpdate[0], tmpdeferredUpdate[1], *tmpdeferredUpdate[2]);
+				};
+			})
+		}
+	}
+}
+
 UpdateDispatcher {
 	classvar <dispatcherDict;
 
-	var dispatchTable;
-	var connection;
+	var <dispatchTable;
+	var <connection;
 
 	*initClass {
 		dispatcherDict = IdentityDictionary();
@@ -633,70 +713,104 @@ UpdateDispatcher {
 
 	*new {
 		|object|
-		^dispatcherDict.atFail(object, {
-			var newObj = super.new.init(object);
-			dispatcherDict[object] = newObj;
-			newObj;
-		})
+		^dispatcherDict.atCreate(object, { super.new.init(object) })
 	}
 
-	*clear {
+	*free {
 		|object|
-		dispatcherDict[object] !? { |d| d.clear };
+		dispatcherDict[object] !? { |d| d.free };
+	}
+
+	*addItem {
+		|item|
+		UpdateDispatcher(item.object).addItem(item);
+	}
+
+	addItem {
+		|item|
+		dispatchTable ?? {
+			dispatchTable = IdentityDictionary();
+			connection.connect();
+		};
+		dispatchTable[item.key] = item;
+	}
+
+	*removeItem {
+		|item|
+		var dispatcher = UpdateDispatcher(item.object).removeItem(item);
+	}
+
+	removeItem {
+		|item|
+		dispatchTable[item.key] = nil;
+		if (dispatchTable.size == 0) {
+			this.free();
+		}
 	}
 
 	init {
 		|object|
+		// "Creating dispatcher %".format(this.identityHash).postln;
 		connection = object.connectTo(this);
 		dispatchTable = IdentityDictionary();
 	}
 
+	free {
+		// "Clearing dispatcher %".format(this.identityHash).postln;
+		this.class.dispatcherDict[connection.object] = nil; // clear self
+		connection.free();
+		connection = dispatchTable = nil;
+	}
+
 	at {
 		|key|
-		^dispatchTable.atFail(key, {
-			// We want a connection to represent our dispatcher->(named signal)
-			// but we want to manage ourselves - so no need to connect this.
-			var connection = Connection.basicNew(this, UpdateForwarder(), true);
-			dispatchTable[key] = connection;
-			connection;
-		})
-	}
-
-	remove {
-		|key|
-		dispatchTable.removeAt(key);
-		if (dispatchTable.size == 0) {
-			this.clear();
-		}
-	}
-
-	dependants {
-		^dispatchTable !? { dispatchTable.values.collect(_.dependant) } ?? []
+		dispatchTable ?? {
+			dispatchTable = IdentityDictionary();
+			connection.connect();
+		};
+		^dispatchTable.atCreate(key, { UpdateDispatcherItem(connection.object, key) });
 	}
 
 	update {
 		|obj, changed ...args|
 		dispatchTable[changed] !? {
-			|connection|
-			connection.dependant.update(obj, changed, *args);
+			|item|
+			item.update(obj, changed, *args);
 		}
 	}
 
-	connectionCleared {
-		|connection|
-		dispatchTable.findKeyForValue(connection) !? (this.remove(_));
-	}
-
-	clear {
-		dispatcherDict[connection.object] = nil;
-		connection.clear;
-		dispatchTable.values.do(_.releaseDependants);
-		connection = dispatchTable = nil;
-	}
-
 	connectionTraceString {
-		|what|
-		^dispatchTable[what].dependant.connectionTraceString ?? { "%(%) - no target".format(this.class, this.identityHash) };
+		|obj, what|
+		^dispatchTable[obj] !? { |conn| conn.dependant.connectionTraceString(obj, what) } ?? { "%(%) - no target".format(this.class, this.identityHash) }
+	}
+}
+
+UpdateDispatcherItem : UpdateForwarder {
+	var <object, <key;
+
+	*new {
+		|object, key|
+		^super.new.init(object, key)
+	}
+
+	init {
+		|inObject, inKey|
+		object = inObject;
+		key = inKey;
+	}
+
+	onDependantsNotEmpty {
+		UpdateDispatcher.addItem(this);
+	}
+
+	onDependantsEmpty {
+		UpdateDispatcher.removeItem(this);
+	}
+
+	connectionFree {
+		this.release();
+		object = nil;
+		key = nil;
 	}
 }
 
@@ -705,8 +819,14 @@ MethodSlot {
 
 	*new {
 		|obj, method ...argOrder|
-		^super.new.init(obj, method, argOrder)
+		if (obj.isKindOf(View)) {
+			^MethodSlotUI.prNew().init(obj, method, argOrder);
+		} {
+			^MethodSlot.prNew().init(obj, method, argOrder);
+		};
 	}
+
+	*prNew { ^super.new }
 
 	init {
 		|inObject, inMethodName, argOrder|
@@ -810,10 +930,63 @@ ValueSlot : MethodSlot {
 	}
 }
 
-FunctionSlot : MethodSlot {
+MultiMappedSlot {
+	var <object, <mapFunction;
+
 	*new {
-		|obj ...argOrder|
-		^super.new(obj, \value, *argOrder)
+		|obj ...argsMap|
+		^super.newCopyArgs(obj).init(argsMap)
+	}
+
+	init {
+		|argsMap|
+		if (argsMap.size == 0) {
+			mapFunction = this.defaultFunc;
+		} {
+			if ((argsMap.size == 1) && argsMap[0].isFunction) {
+				mapFunction = argsMap[0]
+			} {
+				mapFunction = this.defaultMapFunc(argsMap.copy.asDict)
+			}
+		}
+	}
+
+	defaultFunc {
+		this.subclassResponsibility(thisMethod)
+	}
+
+	defaultMapFunc {
+		this.subclassResponsibility(thisMethod)
+	}
+
+	update {
+		|obj, changed ...args|
+		var method = mapFunction.value(changed);
+		if (method.notNil) {
+			object.perform(method, obj, changed, *args);
+		}
+	}
+}
+
+SignalMappedSlot : MultiMappedSlot {
+	defaultFunc {
+		^{ |obj, changed| changed }
+	}
+
+	defaultMapFunc {
+		|argsMap|
+		^{ |obj, changed| argsMap[changed] }
+	}
+}
+
+ObjectMappedSlot : MultiMappedSlot {
+	defaultFunc {
+		Error("ObjectMappedSlot requires a mapping func or at least one object->method mapping.").throw
+	}
+
+	defaultMapFunc {
+		|argsMap|
+		^{ |obj, changed| argsMap[obj] }
 	}
 }
 
@@ -822,168 +995,23 @@ SynthArgSlot {
 
 	*new {
 		|synth, argName|
-		^super.newCopyArgs(synth, argName).init
+		^super.newCopyArgs(synth, argName).connectSynth
 	}
 
-	init {
+	connectSynth {
 		synth.register;
-		synthConn = synth.connectTo(this.methodSlot(\free)).filter(\n_end);
+		synthConn = synth.signal(\n_end).connectTo(this.methodSlot(\disconnectSynth))
 	}
 
-	free {
-		synthConn.disconnect().clear();
-		synth = argName = synthConn =nil;
+	disconnectSynth {
+		synthConn.free();
+		synth = argName = synthConn = nil;
 	}
 
 	update {
 		|obj, what, value|
 		if (synth.notNil) {
 			synth.set(argName, value);
-		}
-	}
-}
-
-SynthMultiArgSlot {
-	var <synth, <mapFunction, synthConn;
-
-	*new {
-		|synth ...argsMap|
-		^super.newCopyArgs(synth).init(argsMap)
-	}
-
-	init {
-		|argsMap|
-		synth.register;
-		synthConn = synth.connectTo(this.methodSlot(\free)).filter(\n_end);
-
-		if (argsMap.size == 0) {
-			mapFunction = {|k| k};
-		} {
-			if ((argsMap.size == 1) && argsMap[0].isFunction) {
-				mapFunction = argsMap[0]
-			} {
-				argsMap = argsMap.copy.asDict;
-				mapFunction = argsMap[_];
-			}
-		}
-	}
-
-	free {
-		synthConn.disconnect().clear();
-		synth = mapFunction = synthConn =nil;
-	}
-
-	update {
-		|obj, what, value|
-		var argName = mapFunction.value(what);
-		if (argName.notNil) {
-			synth.set(argName, value);
-		}
-	}
-}
-
-SynthValueMapSlot : SynthMultiArgSlot {
-	update {
-		|obj, what, value|
-		if (what == \value) {
-			var argName = mapFunction.value(obj);
-			if (argName.notNil) {
-				synth.set(argName, value);
-			}
-		}
-	}
-}
-
-DeferredUpdater : UpdateForwarder {
-	var clock, force, delta;
-
-	*new {
-		|delta=0, clock=(AppClock), force=true|
-		^super.new.init(delta, clock, force)
-	}
-
-	init {
-		|inDelta, inClock, inForce|
-		clock = inClock;
-		force = inForce;
-		delta = inDelta;
-	}
-
-	update {
-		|object, what ...args|
-		if ((thisThread.clock == clock) && force.not) {
-			super.update(object, what, *args);
-		} {
-			clock.sched(delta, {
-				super.update(object, what, *args);
-			})
-		}
-	}
-}
-
-OneShotUpdater : UpdateForwarder {
-	var <>connection;
-
-	*new {
-		|connection|
-		^super.new.connection_(connection)
-	}
-
-	update {
-		|object, what ...args|
-		protect {
-			super.update(object, what, *args);
-		} {
-			connection.disconnect();
-		}
-	}
-}
-
-CollapsedUpdater : UpdateForwarder {
-	var clock, force, delta;
-	var deferredUpdate;
-	var holdUpdates=false;
-
-	*new {
-		|delta=0, clock=(AppClock), force=true|
-		^super.new.init(delta, clock, force)
-	}
-
-	init {
-		|inDelta, inClock, inForce|
-		clock = inClock;
-		force = inForce;
-		delta = inDelta;
-	}
-
-	deferIfNeeded {
-		|func|
-		if ((thisThread.clock == clock) && force.not) {
-			func.value
-		} {
-			clock.sched(0, func);
-		}
-	}
-
-	update {
-		|object, what ...args|
-		if (holdUpdates) {
-			deferredUpdate = [object, what, args];
-		} {
-			holdUpdates = true;
-
-			this.deferIfNeeded {
-				super.update(object, what, *args);
-			};
-
-			clock.sched(delta, {
-				holdUpdates = false;
-				if (deferredUpdate.notNil) {
-					var tmpdeferredUpdate = deferredUpdate;
-					deferredUpdate = nil;
-					this.update(tmpdeferredUpdate[0], tmpdeferredUpdate[1], *tmpdeferredUpdate[2]);
-				};
-			})
 		}
 	}
 }
@@ -1170,7 +1198,7 @@ MIDIControlValue : NumericControlValue {
 		^"%(%)".format(this.class, this.identityHash)
 	}
 
-	connectionCleared {}
+	connectionFreed {}
 }
 
 +Node {
@@ -1227,4 +1255,15 @@ MIDIControlValue : NumericControlValue {
 		}
 	}
 }
+
++Function {
+	*identity {
+		^{ |in| in }
+	}
+
+	*postln {
+		^{|...args| args.postln }
+	}
+}
+
 
