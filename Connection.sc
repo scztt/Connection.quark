@@ -167,7 +167,7 @@ Connection {
 		traceConnection.notNil.if {
 			^traceConnection.connected
 		} {
-			^object.dependants.includes(dependant);
+			^object.dependants !? { |d| d.includes(dependant) } ?? false;
 		}
 	}
 
