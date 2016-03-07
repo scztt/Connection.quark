@@ -1071,11 +1071,6 @@ MIDIControlValue : NumericControlValue {
 		^MethodSlot(this, method, *argOrder)
 	}
 
-	multiSlot {
-		|...map|
-		^MultiMethodSlot(this, *map);
-	}
-
 	connectTo {
 		|...dependants|
 		var autoConnect = if (dependants.last.isKindOf(Boolean)) { dependants.pop() } { true };
@@ -1086,6 +1081,16 @@ MIDIControlValue : NumericControlValue {
 				|dependant|
 				Connection(this, dependant, autoConnect)
 			})
+		}
+	}
+
+	mapToSlots {
+		|...associations|
+		^ConnectionList.makeWith {
+			associations.do {
+				|assoc|
+				assoc.key.connectTo(this.methodSlot(assoc.value));
+			}
 		}
 	}
 
@@ -1115,20 +1120,14 @@ MIDIControlValue : NumericControlValue {
 		^SynthArgSlot(this, argName)
 	}
 
-	multiArgSlot {
-		|...argMap|
-		^SynthMultiArgSlot(this, *argMap);
-	}
-
-	connectValues {
-		|...argMap|
-		var slot = SynthValueMapSlot(this, *argMap);
-		var list = List();
-		argMap.pairsDo({
-			|source|
-			list.add(source.connectTo(slot));
-		});
-		^ConnectionList(list);
+	mapToArgs {
+		|...associations|
+		^ConnectionList.makeWith {
+			associations.do {
+				|assoc|
+				assoc.key.signal(\value).connectTo(this.argSlot(assoc.value));
+			}
+		}
 	}
 }
 
