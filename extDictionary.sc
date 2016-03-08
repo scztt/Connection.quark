@@ -11,3 +11,13 @@
 		}
 	}
 }
+
++Association {
+	connect {
+		|...otherAssocs|
+		^([this] ++ otherAssocs).collectAs({
+			|assoc|
+			assoc.key.connectTo(assoc.value)
+		}, ConnectionList)
+	}
+}
