@@ -20,7 +20,7 @@
 		if (dependants.size == 1) {
 			^Connection(this, dependants[0], autoConnect);
 		} {
-			^ConnectionList(dependants.collect {
+			^ConnectionList.newFrom(dependants.collect {
 				|dependant|
 				Connection(this, dependant, autoConnect)
 			})
