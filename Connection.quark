@@ -9,7 +9,7 @@
           test: "",
            url: "http://github.com/scztt/Connection.quark",
   dependencies: [
-              		"Singleton"
+              		"Singleton@1.0.1"
                 ],
   isCompatible: true ,
          since: ""
