@@ -1,7 +1,7 @@
 +Object {
 	valueSlot {
-		|setter=\value_|
-		^ValueSlot(this, setter)
+		|setter=\value|
+		^ValueSlot(this, setter.asSetter)
 	}
 
 	methodSlot {
