@@ -10,7 +10,7 @@
 			Error("connectEach requires collections of equal size (this.size = %, other.size = %)".format(this.size, dependantList.size)).throw;
 		};
 
-		this.collectAs({
+		^this.collectAs({
 			|object, i|
 			var dependant = dependantList[i];
 
