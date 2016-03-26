@@ -1,5 +1,6 @@
 AbstractControlValue {
-	var <value, <spec, specConnection, specConnection, <>updateOnConnect=true, <>holdUpdates=false;
+	var value, <spec, specConnection, specConnection, <>updateOnConnect=true, <>holdUpdates=false;
+	var prIsChanging=false;
 
 	*defaultSpec { this.subclassResponsibility(thisMethod) }
 
@@ -10,8 +11,12 @@ AbstractControlValue {
 
 	init {
 		|initialValue, inSpec|
-		spec = inSpec 			?? { this.class.defaultSpec };
-		value = initialValue 	?? { spec.default };
+		spec = inSpec 			?? { this.class.defaultSpec.deepCopy };
+		value = initialValue;
+	}
+
+	value {
+		^(value ?? { spec.default })
 	}
 
 	value_{
@@ -22,44 +27,47 @@ AbstractControlValue {
 
 	input_{
 		|inVal|
-		value = spec.map(inVal);
-		this.changed(\value, value);
+		this.value = spec.map(inVal);
 	}
 
 	input {
-		^spec.unmap(value);
+		^spec.unmap(this.value);
 	}
 
 	addDependant {
 		|dependant|
 		super.addDependant(dependant);
 		if (updateOnConnect) {
-			dependant.update(this, \value, value);
+			dependant.update(this, \value, this.value);
 		}
 	}
 
 	spec_{
 		|inSpec|
 		spec.setFrom(inSpec);
+
 		this.constrain();
 	}
 
 	constrain {
-		var newValue = spec.constrain(value);
-		if (value != newValue) { this.value = newValue }
+		var newValue;
+		if (value.notNil) {
+			newValue = spec.constrain(value);
+			if (value != newValue) { this.value = newValue }
+		} {
+			this.changed(\value, this.value);
+		}
 	}
 
 	changed {
 		arg what ... moreArgs;
-		if (holdUpdates.not) {
-			^super.changed(what, *moreArgs);
-		}
-	}
-
-	update {
-		|object, changed, value|
-		if ((changed == \value) && (value.isNumber)) {
-			this.value = value;
+		if (holdUpdates.not && prIsChanging.not) {
+			prIsChanging = true;
+			protect {
+				super.changed(what, *moreArgs);
+			} {
+				prIsChanging = false;
+			}
 		}
 	}
 
@@ -94,10 +102,149 @@ AbstractControlValue {
 		this.spec = other.spec;
 		this.value = other.value;
 	}
+
+	asControlInput {
+		^this.value
+	}
+
+	asStream {
+		^Routine { loop { this.asControlInput.yield } }
+	}
 }
 
 NumericControlValue : AbstractControlValue {
 	*defaultSpec { ^\unipolar.asSpec }
+}
+
+IndexedControlValue : AbstractControlValue {
+	*defaultSpec { ^ItemsSpec([]) }
+}
+
+BusControlValue : NumericControlValue {
+	var bus, <>server;
+
+	init {
+		|initialValue, inSpec|
+		super.init(initialValue, inSpec);
+
+		server = Server.default;
+
+		ServerTree.add(this);
+		ServerQuit.add(this);
+		ServerBoot.add(this);
+
+		if (Server.default.serverRunning) {
+			this.send();
+		}
+	}
+
+	bus {
+		if (bus.isNil && server.serverRunning) {
+			this.send();
+		};
+		^bus;
+	}
+
+	doOnServerTree {}
+
+	doOnServerBoot {
+		this.send();
+	}
+
+	doOnServerQuit {
+		this.free();
+	}
+
+	value_{
+		|inValue|
+		super.value_(inValue);
+		bus.set(value);
+	}
+
+	constrain {
+		if (value.isNil) {
+			bus.set(this.value)
+		};
+		^super.constrain();
+	}
+
+	send {
+		if (bus.isNil) {
+			bus = Bus.control(server, 1);
+			bus.set(this.value);
+		}
+	}
+
+	free {
+		if (bus.notNil) {
+			bus.free; bus = nil;
+		}
+	}
+
+	asMap { ^this.bus.asMap }
+}
+
+OnOffControlValue : AbstractControlValue {
+	var value, onSig, offSig;
+
+	*defaultSpec { ^ControlSpec(0, 1, step:1) }
+
+	init {
+		|initialValue|
+		onSig = UpdateForwarder();
+		offSig = UpdateForwarder();
+		^super.init(initialValue);
+	}
+
+	on {
+		this.value = \on;
+	}
+
+	off {
+		this.value = \off;
+	}
+
+	toggle {
+		this.value = (value == \on).if(\off, \on);
+	}
+
+	value_{
+		|inVal|
+		if ((inVal == \on) || (inVal == \off)) {
+			if (inVal != value) {
+				value = inVal;
+				this.changed(\value, value);
+				if (value == \on) {
+					onSig.changed(\on)
+				} {
+					offSig.changed(\on)
+				};
+			}
+		} {
+			Error("Value must be \off or \on").throw
+		}
+	}
+
+	input_{
+		|inputVal|
+		this.value = (inputVal > 0.5).if(\on, \off);
+	}
+
+	input {
+		^switch (value,
+			{ \off }, { 0 },
+			{ \on }, { 1 }
+		)
+	}
+
+	signal {
+		|name|
+		if (name == \on) { ^onSig };
+		if (name == \off) { ^offSig };
+		^super.signal(name);
+	}
+
+	constrain {}
 }
 
 MIDIControlValue : NumericControlValue {
@@ -108,7 +255,7 @@ MIDIControlValue : NumericControlValue {
 
 	cc_{
 		| ccNumOrFunc, chan, srcID, argTemplate, dispatcher |
-		inputSpec = inputSpec ?? { this.defaultInputSpec };
+		inputSpec = inputSpec ?? { this.class.defaultInputSpec };
 
 		func = func ? {
 			|val|
@@ -162,11 +309,12 @@ MIDIControlValue : NumericControlValue {
 ControlValueEnvir : EnvironmentRedirect {
 	var <default, redirect;
 	var envir;
+	var <allowCreate=true;
 
 	*new {
 		|default=(NumericControlValue)|
 		var envir = Environment();
-		^super.new().default_(default)
+		^super.new().default_(default).know_(true)
 	}
 
 	default_{
@@ -182,7 +330,7 @@ ControlValueEnvir : EnvironmentRedirect {
 		|key|
 		var control = super.at(key);
 
-		if(control.isNil) {
+		if(control.isNil && allowCreate) {
 			control = default.value(key);
 			super.put(key, control);
 		};
