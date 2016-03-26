@@ -15,7 +15,10 @@ UpdateDispatcher {
 
 	*free {
 		|object|
-		dispatcherDict[object] !? { |d| d.free };
+		dispatcherDict[object] !? {
+			|d|
+			d.free;
+		};
 	}
 
 	*addItem {
@@ -53,7 +56,7 @@ UpdateDispatcher {
 
 	free {
 		// "Clearing dispatcher %".format(this.identityHash).postln;
-		this.class.dispatcherDict[connection.object] = nil; // clear self
+		this.class.dispatcherDict[this.class.dispatcherDict.findKeyForValue(this)] = nil; // clear self
 		connection.free();
 		connection = dispatchTable = nil;
 	}
