@@ -239,12 +239,15 @@ Connection {
 ConnectionList : List {
 	*makeWith {
 		|func|
+		var result;
+
 		Connection.prBeforeCollect();
 		protect {
 			func.value()
 		} {
-			^Connection.prAfterCollect();
-		}
+			result = Connection.prAfterCollect();
+		};
+		^result
 	}
 
 	connected_{
