@@ -1,4 +1,12 @@
 +Object {
+	onSignalDependantAdded {
+		// override to be notified of new signal dependant connection
+	}
+
+	onSignalDependantRemoved {
+		// override to be notified of new signal dependant disconnection
+	}
+
 	valueSlot {
 		|setter=\value|
 		^ValueSlot(this, setter.asSetter)

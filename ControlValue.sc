@@ -42,6 +42,13 @@ AbstractControlValue {
 		}
 	}
 
+	onSignalDependantAdded {
+		|signal, dependant|
+		if (updateOnConnect && (signal == \value)) {
+			dependant.update(this, \value, this.value);
+		}
+	}
+
 	spec_{
 		|inSpec|
 		spec.setFrom(inSpec);
@@ -50,12 +57,14 @@ AbstractControlValue {
 	}
 
 	constrain {
-		var newValue;
+		|notify=true|
+
 		if (value.notNil) {
-			newValue = spec.constrain(value);
-			if (value != newValue) { this.value = newValue }
-		} {
-			this.changed(\value, this.value);
+			value = spec.constrain(value);
+		};
+
+		if (notify) {
+			this.changed(\value, value);
 		}
 	}
 

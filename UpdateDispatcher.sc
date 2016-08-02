@@ -33,6 +33,8 @@ UpdateDispatcher {
 			connection.connect();
 		};
 		dispatchTable[item.key] = item;
+
+		connection.object.onSignalConnected(item.key, item.object);
 	}
 
 	*removeItem {
@@ -104,6 +106,11 @@ UpdateDispatcherItem : UpdateForwarder {
 
 	onDependantsEmpty {
 		UpdateDispatcher.removeItem(this);
+	}
+
+	onDependantAdded {
+		|dependant|
+		object.onSignalDependantAdded(key, dependant);
 	}
 
 	connectionFree {

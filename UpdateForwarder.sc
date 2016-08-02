@@ -22,10 +22,13 @@ UpdateForwarder {
 		};
 
 		dependants.add(dependant);
+		this.onDependantAdded(dependant);
 	}
 
 	removeDependant { arg dependant;
 		dependants.remove(dependant);
+		this.onDependantRemoved(dependant);
+
 		if (dependants.size == 0) {
 			dependants = nil;
 			this.onDependantsEmpty;
@@ -44,6 +47,10 @@ UpdateForwarder {
 	onDependantsEmpty {}
 
 	onDependantsNotEmpty {}
+
+	onDependantAdded {}
+
+	onDependantRemoved {}
 
 	update {
 		|object, what ...args|
