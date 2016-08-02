@@ -89,7 +89,6 @@ UpdateTransform : UpdateForwarder {
 		|object, what ...args|
 		var argsArray = func.value(object, what, *args);
 		if (argsArray.notNil) {
-			argsArray = argsArray[0..1] ++ argsArray[2];
 			super.update(*argsArray);
 		}
 	}
