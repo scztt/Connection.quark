@@ -340,4 +340,12 @@ ConnectionList : List {
 		|shouldFree=false|
 		this.do(_.oneShot(shouldFree))
 	}
+
+	connected {
+		^this.collect(_.connected)
+	}
+
+	allConnected {
+		^this.collect(_.connected).includes(false).not
+	}
 }
