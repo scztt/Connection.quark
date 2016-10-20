@@ -1,0 +1,271 @@
+TITLE:: Connection
+summary:: Connection provides a more convient, expressive, and powerful way of connecting and synchronizing objects, values, and UI views.
+categories:: Control
+related:: Guides/Connection
+
+DESCRIPTION::
+No helpfile yet... but for information on Connection, see the link::Guides/Connection::.
+
+
+CLASSMETHODS::
+
+METHOD:: prBeforeCollect
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: initClass
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: prAfterCollect
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: untraceAll
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: traceWith
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: traceAll
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: collectionStack
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: tracing
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: basicNew
+(describe method here)
+
+ARGUMENT:: object
+(describe argument here)
+
+ARGUMENT:: dependant
+(describe argument here)
+
+ARGUMENT:: connected
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: object
+(describe argument here)
+
+ARGUMENT:: dependant
+(describe argument here)
+
+ARGUMENT:: autoConnect
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: filter
+(describe method here)
+
+ARGUMENT:: filter
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connected
+(describe method here)
+
+ARGUMENT:: connect
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectionFreed
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dependants
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: object
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: defer
+(describe method here)
+
+ARGUMENT:: delta
+(describe argument here)
+
+ARGUMENT:: clock
+(describe argument here)
+
+ARGUMENT:: force
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: transform
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: collapse
+(describe method here)
+
+ARGUMENT:: delta
+(describe argument here)
+
+ARGUMENT:: clock
+(describe argument here)
+
+ARGUMENT:: force
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: removeDependant
+(describe method here)
+
+ARGUMENT:: dep
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: traceConnection
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: oneShot
+(describe method here)
+
+ARGUMENT:: shouldFree
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: free
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dependant
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: trace
+(describe method here)
+
+ARGUMENT:: shouldTrace
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connect
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: prCollect
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: disconnect
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: releaseDependants
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: disconnectWith
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onTrace
+(describe method here)
+
+ARGUMENT:: obj
+(describe argument here)
+
+ARGUMENT:: what
+(describe argument here)
+
+ARGUMENT::  ... values
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: traceWith
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addDependant
+(describe method here)
+
+ARGUMENT:: dep
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectTo
+(describe method here)
+
+ARGUMENT:: nextDependant
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: chain
+(describe method here)
+
+ARGUMENT:: newDependant
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

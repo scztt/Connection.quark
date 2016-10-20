@@ -250,6 +250,7 @@ OnOffControlValue : AbstractControlValue {
 MIDIControlValue : NumericControlValue {
 	var <>inputSpec, <isOwned=false;
 	var func, <midiFunc;
+	var midiOut; // mtm add
 
 	*defaultInputSpec { ^ControlSpec(0, 127); }
 
@@ -304,6 +305,27 @@ MIDIControlValue : NumericControlValue {
 			midiFunc = nil;
 		}
 	}
+
+
+	/* mtm add ... */
+	enableOutput {|destPort=0|
+		midiFunc ?? {"midiFunc hasn't been initialized, set .cc_ to connect a MIDI output".warn};
+		midiOut = MIDIOut(destPort, MIDIClient.destinations[destPort].uid);
+	}
+
+	// val 0>1, uses inputSpec to map to MIDI range
+	ccOut_ {|val|
+		midiOut !? {
+			midiOut.control(midiFunc.chan ?? 0, midiFunc.msgNum, inputSpec.map(val));
+		}
+	}
+
+	noteOut_ {|val|
+		midiOut !? {
+			midiOut.noteOn(midiFunc.chan ?? 0, midiFunc.msgNum, val);
+		}
+	}
+	/* ... end mtm add */
 }
 
 ControlValueEnvir : EnvironmentRedirect {
