@@ -9,7 +9,11 @@
 
 	valueSlot {
 		|setter=\value|
-		^ValueSlot(this, setter.asSetter)
+		^ValueSlot(this, setter.asSymbol.asSetter)
+	}
+
+	inputSlot {
+		^this.valueSlot(\input)
 	}
 
 	methodSlot {
