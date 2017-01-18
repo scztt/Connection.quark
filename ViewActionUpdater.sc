@@ -21,8 +21,7 @@ ViewActionUpdater {
 
 	*isConnected {
 		|view, actionName, actionFunc|
-		var isConnected = false;
-		isConnected == isConnected || (view.perform(actionName) == actionFunc);
+		var isConnected = (view.perform(actionName) == actionFunc);
 		if (view.perform(actionName).isKindOf(FunctionList)) {
 			isConnected = isConnected || view.perform(actionName).array.includes(actionFunc);
 		};
@@ -34,7 +33,7 @@ ViewActionUpdater {
 		var func = this.actionFunc(propertyName, signalName);
 		if (this.isConnected(view, actionName, func).not) {
 			view.perform(actionName.asSetter, view.perform(actionName).addFunc(func));
-			view.onClose = view.onClose.addFunc(onCloseFunc.value(_, actionName, func));
+			{ view.onClose = view.onClose.addFunc(onCloseFunc.value(_, actionName, func)) }.defer;
 		}
 	}
 
