@@ -59,6 +59,46 @@ UpdateForwarder {
 			item.update(object, what, *args);
 		}
 	}
+
+	// chaining forwarders
+	chain {
+		|class ...args|
+		var newForwarder = class.new(*args);
+		this.connectTo(newForwarder);
+		^newForwarder;
+	}
+
+	filter {
+		|func|
+		^this.chain(UpdateFilter, func);
+	}
+
+	transform {
+		|func|
+		^this.chain(UpdateTransform, func);
+	}
+
+	defer {
+		|delta=0, clock=(AppClock), force=true|
+		^this.chain(DeferredUpdater, delta, clock, force);
+	}
+
+	collapse {
+		|delta=0, clock=(AppClock), force=true|
+		^this.chain(CollapsedUpdater, delta, clock, force);
+	}
+
+	oneShot {
+		|shouldFree=false|
+		var newUpdater = OneShotUpdater(nil, shouldFree);
+		newUpdater.connection = (this.connectTo(newUpdater));
+		^newUpdater;
+	}
+
+	addDoAfter {
+		|func|
+		this.oneShot(true).connectTo(func);
+	}
 }
 
 UpdateFilter : UpdateForwarder {
@@ -99,7 +139,7 @@ UpdateKeyFilter : UpdateFilter {
 
 	*new {
 		|key|
-		var func = "{ |obj, inKey| % == inKey }".format("\\" ++ key).interpret;
+		var func = "{ |obj, inKey| % == inKey }".format("\\" ++ key.asString).interpret;
 		^super.new(func).key_(key);
 	}
 
