@@ -67,6 +67,13 @@
 		^keyOrFuncs.collect(this.signal(_));
 	}
 
+	inputToValue { |obj|		^this.signal(\input).connectTo(obj.valueSlot()) }
+	valueToValue { |obj|		^this.signal(\value).connectTo(obj.valueSlot()) }
+	inputToInput { |obj|		^this.signal(\input).connectTo(obj.inputSlot()) }
+	valueToInput { |obj|		^this.signal(\value).connectTo(obj.inputSlot()) }
+	inputToArg { |obj, argName|	^this.signal(\input).connectTo(obj.argSlot(argName)) }
+	valueToArg { |obj, argName|	^this.signal(\value).connectTo(obj.argSlot(argName)) }
+
 	connectionTraceString {
 		^"%(%)".format(this.class, this.identityHash)
 	}
