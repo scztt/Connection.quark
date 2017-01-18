@@ -1,5 +1,5 @@
 PeriodicUpdater {
-	var <object, <method, <clock, <>delegate;
+	var <>object, <method, <clock, <>delegate;
 	var <freq, <>name;
 	var <process, <lastVal;
 
@@ -14,7 +14,11 @@ PeriodicUpdater {
 		|inFreq|
 		freq = inFreq;
 		process.stop();
-		process = SkipJack(this.pull(_), freq, name:"PeriodicUpdater_" ++ this.identityHash.asString, clock:clock);
+		process = SkipJack({ this.pull() },
+			dt: freq,
+			name: "PeriodicUpdater_" ++ this.identityHash.asString,
+			clock: clock
+		);
 	}
 
 	start {
@@ -26,8 +30,10 @@ PeriodicUpdater {
 	}
 
 	pull {
+		|update=true|
 		var val = object.perform(method);
-		if (val != lastVal) {
+
+		if (update && (val != lastVal)) {
 			lastVal = val;
 			delegate.changed(\value, val)
 		};
@@ -35,8 +41,33 @@ PeriodicUpdater {
 }
 
 BusUpdater : PeriodicUpdater {
+	var server;
+
 	*new {
 		|bus, freq=0.1, delegate|
 		^super.new(bus, \getSynchronous, freq, delegate);
+	}
+
+	bus_{
+		|inBus|
+		object = inBus;
+		inBus !? { server = inBus.server };
+	}
+
+	pull {
+		|update=true|
+		if (server.notNil and: { server.hasShmInterface }) {
+			^super.pull(update);
+		} {
+			object !? {
+				object.get({
+					|val|
+					if (update && (val != lastVal)) {
+						lastVal = val;
+						delegate.changed(\value, val)
+					};
+				});
+			}
+		}
 	}
 }
