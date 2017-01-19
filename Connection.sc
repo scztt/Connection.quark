@@ -248,6 +248,12 @@ Connection {
 ConnectionList : List {
 	*makeWith {
 		|func|
+		this.deprecated(thisMethod, this.findMethod(\make));
+		^this.make(func);
+	}
+
+	*make {
+		|func|
 		var result;
 
 		Connection.prBeforeCollect();
