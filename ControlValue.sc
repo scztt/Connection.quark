@@ -206,12 +206,10 @@ BusControlValue : NumericControlValue {
 OnOffControlValue : AbstractControlValue {
 	var value, onSig, offSig;
 
-	*defaultSpec { ^ControlSpec(0, 1, step:1) }
+	*defaultSpec { ^ItemSpec([\off, \on]) }
 
 	init {
 		|initialValue|
-		onSig = UpdateForwarder();
-		offSig = UpdateForwarder();
 		^super.init(initialValue);
 	}
 
@@ -233,11 +231,7 @@ OnOffControlValue : AbstractControlValue {
 			if (inVal != value) {
 				value = inVal;
 				this.changed(\value, value);
-				if (value == \on) {
-					onSig.changed(\on)
-				} {
-					offSig.changed(\on)
-				};
+				this.changed(inVal);
 			}
 		} {
 			Error("Value must be \off or \on").throw
@@ -254,13 +248,6 @@ OnOffControlValue : AbstractControlValue {
 			{ \off }, { 0 },
 			{ \on }, { 1 }
 		)
-	}
-
-	signal {
-		|name|
-		if (name == \on) { ^onSig };
-		if (name == \off) { ^offSig };
-		^super.signal(name);
 	}
 
 	constrain {}
