@@ -1,5 +1,6 @@
 AbstractControlValue {
 	var value, <spec, specConnection, specConnection, <>updateOnConnect=true, <>holdUpdates=false;
+	var inputTransform;
 	var prIsChanging=false;
 
 	*defaultSpec { this.subclassResponsibility(thisMethod) }
@@ -23,7 +24,7 @@ AbstractControlValue {
 	value_{
 		|inVal|
 		value = spec.constrain(inVal);
-		this.changed(\value, value);
+		this.changed(\value, value, spec.unmap(value));
 	}
 
 	input_{
@@ -39,14 +40,30 @@ AbstractControlValue {
 		|dependant|
 		super.addDependant(dependant);
 		if (updateOnConnect) {
-			dependant.update(this, \value, this.value);
+			var value = this.value;
+			dependant.update(this, \value, value, spec.unmap(value));
 		}
 	}
 
 	onSignalDependantAdded {
 		|signal, dependant|
-		if (updateOnConnect && (signal == \value)) {
-			dependant.update(this, \value, this.value);
+		if (updateOnConnect && ((signal == \value) || (signal == \input))) {
+			var value = this.value;
+			dependant.update(this, \value, value, spec.unmap(value));
+		}
+	}
+
+	signal {
+		|keyOrFunc|
+		if (keyOrFunc == \input) {
+			^inputTransform ?? {
+				inputTransform = super.signal(\value).transform({
+					|obj, what, value, unmappedValue|
+					[obj, what, unmappedValue]
+				})
+			}
+		} {
+			^super.signal(keyOrFunc)
 		}
 	}
 
@@ -65,7 +82,7 @@ AbstractControlValue {
 		};
 
 		if (notify) {
-			this.changed(\value, value);
+			this.changed(\value, this.value, spec.unmap(this.value));
 		}
 	}
 
@@ -81,17 +98,6 @@ AbstractControlValue {
 		}
 	}
 
-	signal {
-		|key|
-		if (key == \value) {
-			// We only use the \value signal - so just return the object itself as an optimization.
-			// This also allows us to detect when dependants are added, and report the current value.
-			^this
-		} {
-			^super.signal(key);
-		}
-	}
-
 	// Do not override this method in subclasses - instead, override prSetFrom
 	setFrom {
 		|other|
@@ -102,7 +108,7 @@ AbstractControlValue {
 			protect { this.prSetFrom(other) } {
 				this.holdUpdates = false;
 			};
-			this.changed(\value, value);
+			this.changed(\value, value, spec.unmap(value));
 		}
 	}
 
