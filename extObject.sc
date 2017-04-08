@@ -17,8 +17,8 @@
 	}
 
 	methodSlot {
-		|method ...argOrder|
-		^MethodSlot(this, method, *argOrder)
+		|method|
+		^MethodSlot(this, method)
 	}
 
 	methodSlots {

@@ -2,60 +2,40 @@ MethodSlot {
 	var <updateFunc, <reciever, <methodName;
 
 	*new {
-		|obj, method ...argOrder|
+		|obj, method|
 		if (obj.isKindOf(View)) {
-			^MethodSlotUI.prNew().init(obj, method, argOrder);
+			^MethodSlotUI.prNew().init(obj, method);
 		} {
-			^MethodSlot.prNew().init(obj, method, argOrder);
+			^MethodSlot.prNew().init(obj, method);
 		};
 	}
 
 	*prNew { ^super.new }
 
 	init {
-		|inObject, inMethodName, argOrder|
-		reciever = inObject;
-		methodName = inMethodName;
-		updateFunc = MethodSlot.makeUpdateFunc(reciever, methodName, argOrder);
+		|object, methodString|
+		reciever = object;
+		methodName = methodString.split($()[0].asSymbol;
+		updateFunc = MethodSlot.makeUpdateFunc(reciever, methodString);
 	}
 
 	*makeUpdateFunc {
-		|reciever, methodName, argOrder|
+		|reciever, methodString|
 		var argString, callString;
 		var possibleArgs = ['object', 'changed', '*args', 'args', 'value'];
 
-		if (methodName.isKindOf(String) && argOrder.isEmpty) {
-			// Should be of the form e.g. "someMethod(value, arg[0])"
-			callString = methodName;
-			methodName = methodName.split($()[0].asSymbol; // guess the method name - used later for validation
-		} {
-			argOrder.do {
-				|a|
-				if (a.isInteger.not && possibleArgs.includes(a).not) {
-					Error("Can't handle arg '%' - must be one of: %.".format(a, possibleArgs.join(", "))).throw
-				}
-			};
+		methodString = methodString.asString;
+		methodName = methodString.split($()[0].stripWhiteSpace.asSymbol; // guess the method name - used later for validation
 
-			if (argOrder.isEmpty) {
-				argOrder = ['object', 'changed', '*args'];
-			};
-
-			argString = argOrder.collect({
-				|a|
-				if (a.isInteger) {
-					"args[%]".format(a)
-				} {
-					a.asString
-				}
-			}).join(", ");
-			callString = "%(%)".format(methodName, argString);
+		if (methodString.find("(").isNil) {
+			methodString = methodString ++ "(object, changed, *args)";
 		};
 
 		if (reciever.respondsTo(methodName).not && reciever.tryPerform(\know).asBoolean.not) {
 			Exception("Object of type % doesn't respond to %.".format(reciever.class, methodName)).throw;
 		};
 
-		^"{ |reciever, object, changed, args| var value = args[0]; reciever.% }".format(callString).interpret;
+		^"{ |reciever, object, changed, args| var value = args[0]; reciever.% }".format(methodString).interpret;
 	}
 
 	update {
