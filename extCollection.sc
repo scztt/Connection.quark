@@ -1,7 +1,9 @@
 +SequenceableCollection {
 	connectAll {
-		|dependant|
-		^ConnectionList.newFrom(this.collect(_.connectTo(dependant)))
+		|...dependants|
+		^ConnectionList.newFrom(
+			this.collect(_.connectTo(*dependants))
+		)
 	}
 
 	connectEach {
