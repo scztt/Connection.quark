@@ -235,13 +235,13 @@ Connection {
 		this.chain(OneShotUpdater(this, shouldFree));
 	}
 
-	asConnectionList {
+	asCollection {
 		^this.as(ConnectionList)
 	}
 
 	++ {
 		|other|
-		^(this.as(ConnectionList) ++ other.as(ConnectionList));
+		^(this.asCollection ++ other);
 	}
 }
 
@@ -268,10 +268,10 @@ ConnectionList : List {
 	*newFrom {
 		|obj|
 		if (obj.isKindOf(Connection)) {
-			^this.newUsing([obj]);
-		} {
-			^super.newFrom(obj);
-		}
+			obj = [obj];
+		};
+
+		^super.newFrom(obj);
 	}
 
 	connected_{
@@ -371,6 +371,6 @@ ConnectionList : List {
 
 	++ {
 		|other|
-		^this.class.newFrom(this.superPerform('++', other.asConnectionList))
+		^this.class.newFrom(this.superPerform('++', other))
 	}
 }
