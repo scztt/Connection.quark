@@ -41,7 +41,7 @@
 
 	mapToSlots {
 		|...associations|
-		^ConnectionList.makeWith {
+		^ConnectionList.make {
 			associations.do {
 				|assoc|
 				assoc.key.connectTo(this.methodSlot(assoc.value));

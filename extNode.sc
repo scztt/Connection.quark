@@ -11,7 +11,7 @@
 
 	mapToArgs {
 		|...associations|
-		^ConnectionList.makeWith {
+		^ConnectionList.make {
 			associations.do {
 				|assoc|
 				assoc.key.signal(\value).connectTo(this.argSlot(assoc.value));
