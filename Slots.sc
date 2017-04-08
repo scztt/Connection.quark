@@ -118,4 +118,15 @@ SynthArgSlot {
 			synth.set(argName, value);
 		}
 	}
+
+	spec {
+		var spec, def;
+
+		def = synth.def;
+		if (def.notNil and: { def.metadata.notNil } and: { def.metadata[\spec].notNil }) {
+			spec = def.metadata[\spec][argName];
+		};
+
+		^spec;
+	}
 }
