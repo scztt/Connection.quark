@@ -150,13 +150,14 @@ BusControlValue : NumericControlValue {
 		ServerBoot.add(this);
 
 		if (Server.default.serverRunning) {
-			this.send();
+			this.doOnServerBoot();
+			this.doOnServerTree();
 		}
 	}
 
 	bus {
 		if (bus.isNil && server.serverRunning) {
-			this.send();
+			this.sendBus();
 		};
 		^bus;
 	}
@@ -164,7 +165,7 @@ BusControlValue : NumericControlValue {
 	doOnServerTree {}
 
 	doOnServerBoot {
-		this.send();
+		this.sendBus();
 	}
 
 	doOnServerQuit {
@@ -174,21 +175,23 @@ BusControlValue : NumericControlValue {
 	value_{
 		|inValue|
 		super.value_(inValue);
-		bus.set(value);
+		this.prSendValue()
 	}
 
 	constrain {
-		if (value.isNil) {
-			bus.set(this.value)
-		};
-		^super.constrain();
+		super.constrain();
+		this.prSendValue()
 	}
 
-	send {
+	sendBus {
 		if (bus.isNil) {
 			bus = Bus.control(server, 1);
 			bus.set(this.value);
 		}
+	}
+
+	prSendValue {
+		bus !? { bus.set(this.value) };
 	}
 
 	free {
