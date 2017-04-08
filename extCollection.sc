@@ -25,4 +25,23 @@
 			object.connectTo(dependant);
 		}, ConnectionList)
 	}
+
+	eachMethodSlot {
+		|method|
+		^this.collect(_.methodSlot(method));
+	}
+
+	eachValueSlot {
+		|setter|
+		^this.collect(_.valueSlot(setter));
+	}
+
+	eachInputSlot {
+		^this.collect(_.inputSlot());
+	}
+
+	eachArgSlot {
+		|argName|
+		^this.collect(_.argSlot(argName));
+	}
 }
