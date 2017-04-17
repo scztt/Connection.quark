@@ -21,8 +21,7 @@ MethodSlot {
 
 	*makeUpdateFunc {
 		|reciever, methodString|
-		var argString, callString;
-		var possibleArgs = ['object', 'changed', '*args', 'args', 'value'];
+		var methodName;
 
 		methodString = methodString.asString;
 		methodName = methodString.split($()[0].stripWhiteSpace.asSymbol; // guess the method name - used later for validation
