@@ -1,0 +1,76 @@
+TITLE:: ControlValueEnvir
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: default
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: default
+(describe method here)
+
+ARGUMENT:: inDefault
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: at
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: allowCreate
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: setInputs
+(describe method here)
+
+ARGUMENT:: envir
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: setValues
+(describe method here)
+
+ARGUMENT:: envir
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: put
+(describe method here)
+
+ARGUMENT:: key
+(describe argument here)
+
+ARGUMENT:: value
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

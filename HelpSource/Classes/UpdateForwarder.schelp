@@ -1,0 +1,177 @@
+TITLE:: UpdateForwarder
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: transform
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: defer
+(describe method here)
+
+ARGUMENT:: delta
+(describe argument here)
+
+ARGUMENT:: clock
+(describe argument here)
+
+ARGUMENT:: force
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onDependantsNotEmpty
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dependants
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: release
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: collapse
+(describe method here)
+
+ARGUMENT:: delta
+(describe argument here)
+
+ARGUMENT:: clock
+(describe argument here)
+
+ARGUMENT:: force
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: update
+(describe method here)
+
+ARGUMENT:: object
+(describe argument here)
+
+ARGUMENT:: what
+(describe argument here)
+
+ARGUMENT::  ... args
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: releaseDependants
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: oneShot
+(describe method here)
+
+ARGUMENT:: shouldFree
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onDependantAdded
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: changed
+(describe method here)
+
+ARGUMENT:: what
+(describe argument here)
+
+ARGUMENT::  ... moreArgs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addDependant
+(describe method here)
+
+ARGUMENT:: dependant
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onDependantsEmpty
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onDependantRemoved
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: chain
+(describe method here)
+
+ARGUMENT:: class
+(describe argument here)
+
+ARGUMENT::  ... args
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: removeDependant
+(describe method here)
+
+ARGUMENT:: dependant
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: prInitDependants
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: filter
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addDoAfter
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

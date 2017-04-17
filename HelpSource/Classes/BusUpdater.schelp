@@ -1,0 +1,42 @@
+TITLE:: BusUpdater
+summary:: Send periodic updates when a bus value changes.
+categories:: Connection
+related:: Guides/Connection, Classes/Bus, Classes/PeriodicUpdater
+
+DESCRIPTION::
+When active, this object periodically requests the current value of a Bus and sends out a \value signal to it's dependants.
+See LINK::Classes/PeriodicUpdater:: for more information.
+
+CLASSMETHODS::
+
+METHOD:: new
+ARGUMENT:: bus
+A LINK::Classes/Bus::
+
+ARGUMENT:: freq
+Update frequency, in seconds.
+
+ARGUMENT:: delegate
+An object on which to call code::.changed:: - if none provided, the BusUpdater itself will signal it's dependants.
+
+EXAMPLES::
+
+code::
+(
+Server.default.waitForBoot {
+	~bus = Bus.control(s, 1);
+	~updater = BusUpdater(~bus);
+	~updater.connectTo({
+		|obj, changed, value|
+		"Bus changed to: %".format(value).postln;
+	});
+	fork {
+		~bus.set(0.5);
+		1.wait;
+		~bus.set(1);
+		1.wait;
+		~bus.set(1.5);
+	};
+};
+)
+::

@@ -1,0 +1,51 @@
+TITLE:: PeriodicUpdater
+summary:: Periodically notify on value changes.
+categories:: Connection
+related:: Guides/Connection
+
+DESCRIPTION::
+Periodically poll a value, and update dependants when the value changes.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+ARGUMENT:: object
+	Object to poll.
+ARGUMENT:: method
+	Method of the object that provides the value.
+
+ARGUMENT:: freq
+	Polling frequency.
+
+ARGUMENT:: delegate
+	An object on which to call code::.changed:: - if none provided, the PeriodicUpdater itself will signal it's dependants.
+
+ARGUMENT:: clock
+	Clock on which to perform the updates (UI interaction requires link::Classes/AppClock::)
+
+INSTANCEMETHODS::
+
+METHOD:: pull
+	Immediately query the value and send updates if it has changed.
+
+METHOD:: freq
+	Get or set the update frequency.
+
+METHOD:: start, stop
+	Start or stop updates.
+
+EXAMPLES::
+
+code::
+(
+~updater = PeriodicUpdater(QtGUI, \cursorPosition);
+~updater.connectTo({
+	|obj, changed, value|
+	"Mouse position has changed to: %".format(value).postln;
+});
+)
+
+~updater.stop.releaseDependants;
+
+::

@@ -1,0 +1,7 @@
+TITLE:: AbstractControlValue
+summary:: Base class for control values.
+categories:: Connection
+related:: Classes/NumericControlValue, Guides/Connection
+
+DESCRIPTION::
+This is an abstract base class for values which can be constained, and update dependants when they change. See subclasses for usage.

@@ -1,0 +1,198 @@
+TITLE:: ConnectionList
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: newFrom
+(describe method here)
+
+ARGUMENT:: obj
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: make
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeWith
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: collapse
+(describe method here)
+
+ARGUMENT:: delta
+(describe argument here)
+
+ARGUMENT:: clock
+(describe argument here)
+
+ARGUMENT:: force
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connected
+(describe method here)
+
+ARGUMENT:: connect
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: free
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: disconnectWith
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: addDependant
+(describe method here)
+
+ARGUMENT:: dep
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectTo
+(describe method here)
+
+ARGUMENT:: nextDependant
+(describe argument here)
+
+ARGUMENT:: autoConnect
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: oneShot
+(describe method here)
+
+ARGUMENT:: shouldFree
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectionFreed
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: trace
+(describe method here)
+
+ARGUMENT:: shouldTrace
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: removeDependant
+(describe method here)
+
+ARGUMENT:: dep
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: defer
+(describe method here)
+
+ARGUMENT:: delta
+(describe argument here)
+
+ARGUMENT:: clock
+(describe argument here)
+
+ARGUMENT:: force
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: transform
+(describe method here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connect
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: filter
+(describe method here)
+
+ARGUMENT:: filter
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: chain
+(describe method here)
+
+ARGUMENT:: newDependant
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dependants
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: asConnectionList
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: ++
+(describe method here)
+
+ARGUMENT:: other
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: disconnect
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: releaseDependants
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

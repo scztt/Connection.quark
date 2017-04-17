@@ -1,0 +1,75 @@
+TITLE:: UpdateDispatcherItem
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: object
+(describe argument here)
+
+ARGUMENT:: key
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: object
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onDependantAdded
+(describe method here)
+
+ARGUMENT:: dependant
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: key
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onDependantsEmpty
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: connectionFree
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: onDependantsNotEmpty
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT:: inObject
+(describe argument here)
+
+ARGUMENT:: inKey
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

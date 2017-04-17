@@ -7,6 +7,12 @@ section::Description
 Connection provides a more convient, expressive, and powerful way of connecting and synchronizing objects, values, and UI views in SuperCollider.
 It is built on top of (and is compatible with) the existing link::Classes/Object#addDependant::, link::Classes/Object#removeDependant:: link::Classes/Object#changed:: etc. patterns, but provides greatly expanded functionality.
 
+NOTE::
+While Connection has some convenient methods for operating on collections of objects or methods, it is not an "automatic gui creation" library - there are much better tools for this.
+Instead, it attempts to provide semantically clear operations that can be composed in obvious ways to achieve what you want. In general, individual lines of code using Connection classes and methods
+express obvious relationships between objects, with little-to-no "magic" or behind-the-scenes inference of intent.
+::
+
 warning::
 The Connection quark is under active development. Most API's, object names, etc. are subject to change or removal.
 Please send feedback, bug reports, feature ideas to Scott Carver <scott@artificia.org>.
@@ -25,15 +31,16 @@ code::
 ::
 
 Any dependant of ~notifier receives a call to it's code::update:: method with the arguments code::(object, changed ...args)::.
-In this example, code::~notifier.changed(\foo, "bar"):: results in code::~recipient.update(~notifier, \foo, "bar")::. The "changed" argument is usally used to express EMPHASIS::what:: changed about the object, and the argument after is usually the new value or a description of that change.
+In this example, code::~notifier.changed(\foo, "bar"):: results in code::~recipient.update(~notifier, \foo, "bar")::. The "changed" argument is usually used to express EMPHASIS::what:: changed about the object, and the argument after is usually the new value or a description of that change.
 
-This pattern is simple and powerful, but has pitfalls. When connecting up more complex objects - for example, a UI View with multiple sliders and fields - this pattern requires an extensive amount of bookkeeping. You must keep track of:
+This pattern is simple and powerful, but has pitfalls. When connecting up more complex objects - for example, a UI View with multiple sliders and fields - this pattern requires an extensive amount of bookkeeping.
+You will potentially need to keep track of:
 numberedlist::
 ## Every object you've STRONG::added a dependant to::.
 ## Every object you've STRONG::added as a dependant::.
 ## STRONG::Which:: objects you've added as dependants to which other objects.
 ::
-And, it becomes verbose as you begin to deal with multiple signals from multiple objects.
+And, it becomes verbose as you begin to deal with multiple signals interconnecting multiple objects.
 Often this takes the form of a proliferation of inline functions that simply forward updates with minor changes:
 code::
 object.addDependant({
@@ -59,7 +66,26 @@ code::
 Once you have created a Connection, you can manipulate that connection generically, without needing to store or care about the specific objects it connects. It handles code::addDependant:: / code::removeDependant:: calls, and is guaranteed not to leak memory after it's disconnected and is not reachable.
 This means significantly less bookkeeping for more complex sets of connections.
 
-The canonical way to create connections is with the code::connectTo:: method - this is preferred over creating Connections directly.
+The canonical way to create connections is with the link::Classes/Object#-connectTo:: method - this is preferred over creating Connections directly.
+
+code::
+(
+~slider = Slider();
+~view = View(bounds:600@200).layout_(HLayout(~slider)).front;
+~connection = ~slider.connectTo({
+	|slider|
+	"Slider changed: %".format(slider.value).postln;
+});
+~slider.action = { |v| v.changed(\value) }; // Turn your action into a .changed signal.
+~view.onClose = { ~connection.free };
+)
+::
+
+This is not much more efficient than simply using addDependant, and we still have lots of trivial inline functions.
+
+SUBSECTION:: Connecting objects expressively
+
+If we want to add 20 sliders, our code looks very similar.
 code::
 (
 ~sliders = 20.collect { Slider() };
@@ -68,37 +94,152 @@ code::
 	|slider, i|
 	slider.action = { |v| v.changed(\value) };
 	slider.connectTo({
-		|slider|
 		"Slider % changed: %".format(i, slider.value).postln;
 	})
 });
-~view.onClose = { ~connections.do(_.disconnect) };
+~view.onClose = { ~connections.do(_.free) };
 )
 ::
 
-The Connection quark provides several conveniences that make the above example even more expressive:
-code::
+The Connection quark provides several conveniences that make the above example more expressive and straightforward.
+
+SUBSECTION:: .signal()
+For our Sliders, CODE::slider.signal(\value):: will forward STRONG::only things that match:: CODE::slider.changed(\value,...)::.
+In addition, Connection is smart enough to automatically add a code::slider.action:: function to turn slider actions into CODE::slider.changed(\value, slider.value)::
+
+CODE::
 (
 ~sliders = 20.collect { Slider() };
-~numbers = 20.collect { NumberBox().fixedWidth_(30) };
-~view = View(bounds:600@200).layout_(GridLayout.rows(~sliders, ~numbers)).front;
-~connections = ConnectionList.newFrom(
-	~sliders.collect {
-		|slider, i|
-		slider.signal(\value).connectTo(~numbers[i].valueSlot);
-	}
-);
-~view.onClose = { ~connections.disconnect };
+~view = View(bounds:600@200).layout_(HLayout(*~sliders)).front;
+~connections = ~sliders.collect({
+	|slider, i|
+	slider.signal(\value).connectTo({
+		"Slider % changed: %".format(i, slider.value).postln;
+	})
+});
+~view.onClose = { ~connections.do(_.free) };
 )
 ::
 
-list::
-## link::Classes/ConnectionList:: provides a link::Classes/List::-derived class that contains Connections, and applies common Connection methods to all items in the list.
-## The code::signal:: method extension provides an object that re-broadcasts only changes of a certain type (i.e. code::slider.changed(\value)::). It can be used with any object.
-## The code::object.connectTo(dependant):: method provides a shorthand for code::Connection(object, dependant)::. It should always be used over Connection itself, since it allows for objects to subclass to provide special behavior when connecting.
-## Connecting to code::object.valueSlot:: calls the code::value_:: setter for an object, with the first value argument of the update. It's the equivalent of connecting to: code::{ |obj, changed, value| dependant.value = value; }::
-## The code::slider.action:: that broadcasts changes for the slider from the first example is automatically added as soon as we connect to a signal of that Slider.
-## Finally, View:valueSlot (and EMPHASIS::all:: View slots) are smart enough to {}.defer when setting View properties.
+SUBSECTION:: ConnectionList
+When managing groups of connections, we can use link::Classes/ConnectionList::. link::Classes/ConnectionList:: is a standard collection,
+but forwards all common link::Classes/Connection:: methods on to each item it contains. So, rather than iterating over a collection
+of Connections to free them all, you can simply use code::connectionList.free()::.
+
+LINK::Classes/ConnectionList#*make:: will collect all Connections that are created during the execution of a function.
+
+CODE::
+(
+~sliders = 20.collect { Slider() };
+~view = View(bounds:600@200).layout_(HLayout(*~sliders)).front;
+~connections = ConnectionList.make {
+	~sliders.do {
+		|slider, i|
+		slider.signal(\value).connectTo({
+			"Slider % changed: %".format(i, slider.value).postln;
+		})
+	}
+};
+~view.onClose = { ~connections.free };
+)
+::
+
+
+SUBSECTION:: Connecting multiple objects
+The code::Classes/Connection#-connectTo:: method can take multiple objects, and will connect all of them.
+This makes it easy to create STRONG::a one-to-many connection::.
+For example: code::slider.connectAll(a, b, c)::.
+
+The link::Classes/Collection#-connectAll:: method provides a STRONG::many-to-one connection::, connecting all objects in a list to one dependant.
+For example: code::~sliders.connectAll({ |slider| "Slider changed: %".format(slider.value).postln; })::
+
+If we want to add a NumberBox for each of our sliders, we need a STRONG::many-to-many connection::.
+We can use link::Classes/Collection#-connectEach:: to connect a list of objects to a list of dependants. For example:
+CODE::
+(
+~sliders = 20.collect { Slider() };
+~numbers = 20.collect { NumberBox().minWidth_(40) };
+~view = View(bounds:600@200).layout_(GridLayout.rows(~sliders, ~numbers)).front;
+~connections = ConnectionList.make {
+	~sliders.connectEach(\value, ~numbers, _.valueSlot);
+	~numbers.connectEach(\value, ~sliders, _.valueSlot);
+	~sliders.connectAll({ |slider| "Slider changed: %".format(slider.value).postln; });
+};
+~view.onClose = { ~connections.free };
+)
+::
+
+You may notice that, for CODE::connectEach::, we provide some other arguments.
+The form of connectEach is CODE::objectList.connectEach(signalFunction, dependentList, slotFunction)::, which is
+equivalent to:
+CODE::
+objectList.do {
+	|obj, i|
+	signalFunction.value(obj).connectTo(slotFunction.value(dependentList[i]))
+};
+::
+
+In short, the two functions should take list items and provide an appropriate object or dependent to be connected.
+If you specify a Symbol or a String instead, these are taken to be arguments to t objects .signal or .methodSlot methods. So, the following are equivalent:
+
+CODE::
+~sliders.connectEach(\value, ~numbers, "value_(value)");
+~sliders.connectEach(_.signal(\value), ~numbers, _.methodSlot("value_(value)"));
+~sliders.connectEach(\value, ~numbers, _.valueSlot);
+::
+
+See link::#Slots:: below for more information on LINK::Classes/Object#-methodSlot::.
+
+SUBSECTION:: MVC and ControlValue's
+You can see that the number of connections we have is rapidly increasing.
+The model-view-controller design pattern suggests that we keep STRONG::values:: in a single place (the model),
+and notify objects that display or use those values (views) when a value changes. Connection provides
+a link::Classes/ControlValue:: class to store values, and transmit changes when the value changes.
+We can use link::Classes/NumericControlValue:: to store our numeric values.
+
+CODE::
+(
+~values = 20.collect { NumericControlValue() };
+~sliders = 20.collect { Slider() };
+~numbers = 20.collect { NumberBox().minWidth_(40) };
+~view = View(bounds:600@200).layout_(GridLayout.rows(~sliders, ~numbers)).front;
+~connections = ConnectionList.make {
+	~values.connectEach(\value, ~sliders, _.valueSlot);
+	~values.connectEach(\value, ~numbers, _.valueSlot);
+	~sliders.connectEach(\value, ~values, _.valueSlot);
+};
+~view.onClose = { ~connections.free };
+)
+::
+
+Note that connections are one-way - we want our sliders to be updated when our values change, but also change the values
+when we move them. So, we need a connection in each direction. We only care about our number boxes displaying values, so
+we can make those one-way. We can see this two-way connection in action if we animate our values:
+CODE::
+(
+~values = 20.collect { NumericControlValue().value_(1.0.rand) };
+~sliders = 20.collect { Slider() };
+~numbers = 20.collect { NumberBox().minWidth_(40) };
+~view = View(bounds:600@200).layout_(GridLayout.rows(~sliders, ~numbers)).front;
+
+~connections = ConnectionList.make {
+	~values.connectEach(\value, ~sliders, _.valueSlot);
+	~values.connectEach(\value, ~numbers, _.valueSlot);
+	~sliders.connectEach(\value, ~values, _.valueSlot);
+};
+~view.onClose = { ~connections.free };
+
+// slowly animate our values
+Routine({
+	while {~view.notClosed} {
+		~values.do {
+			|v|
+			v.value = (v.value + 0.005) % 1.0;
+		};
+		(1/30).wait;
+	}
+}).play(AppClock);
+)
 ::
 
 section::Slots
@@ -112,7 +253,7 @@ code::
 	touchdown: 	{ "Touchdown!".postln },
 	fieldGoal:	{ "Field Goal!".postln },
 );
-~connections = ConnectionList.makeWith {
+~connections = ConnectionList.with {
 	~object.signal(\scored)		.connectTo(~dependant.methodSlot("scored(value)"));
 	~object.signal(\touchdown)	.connectTo(~dependant.methodSlot("touchdown"));
 	~object.signal(\fieldGoal)	.connectTo(~dependant.methodSlot("fieldGoal"));
@@ -132,19 +273,20 @@ code::
 	recipient.{{methodSlot_argument}}
 }
 ::
-
-Also in the above, code::ConnectionList:makeWith:: assembles a ConnectionList from all connections that are created during the execution of that function.
+So, for example, when a signal like code::object.changed(\quarter, 2):: is recieved by
+code::dependant.methodSlot("updateElement(changed, value)")::, the resulting call is
+code::dependant.updateElement(\quarter, 2)::.
 
 Synths and Groups have slot methods for their arguments, making it easy to map values to Synth parameters:
 code::
 (
-~sliders = [
-	~amp 	= Slider(),
-	~freq 	= Slider(),
-	~delay 	= Slider(),
-	~decay	= Slider()
-];
-~view = View(bounds:600@200).layout_(HLayout(*~sliders)).front;
+~sliders = (
+	amp: 	Slider(),
+	freq: 	Slider(),
+	delay: 	Slider(),
+	decay:	Slider(),
+);
+~view = View(bounds:600@200).layout_(HLayout(*~sliders.values)).front;
 
 s.waitForBoot {
 	SynthDef(\connDemo, {
@@ -153,11 +295,11 @@ s.waitForBoot {
 	}).add;
 	s.sync;
 	~synth = Synth(\connDemo);
-	~connections = ConnectionList.makeWith {
-		~amp.signal(\value).connectTo(~synth.argSlot(\amp));
-		~freq.signal(\value).connectTo(~synth.argSlot(\freq));
-		~delay.signal(\value).connectTo(~synth.argSlot(\delay));
-		~decay.signal(\value).connectTo(~synth.argSlot(\decay));
+	~connections = ConnectionList.make {
+		~sliders.amp.signal(\value).connectTo(~synth.argSlot(\amp));
+		~sliders.freq.signal(\value).connectTo(~synth.argSlot(\freq));
+		~sliders.delay.signal(\value).connectTo(~synth.argSlot(\delay));
+		~sliders.decay.signal(\value).connectTo(~synth.argSlot(\decay));
 	};
 	~view.onClose = { ~connections.disconnect; ~synth.free; }
 };
@@ -166,7 +308,7 @@ s.waitForBoot {
 
 
 section::Control values
-	Of course, our sliders only range from 0..1. And, we lose their values if we close the View. The link::Classes/NumericControlValue:: class, which provides a model for a numeric value, broadcasts updates when it changes, and can be connected to other objects that are interested in it's value. This class is almost identical in functionality to the CV class from the Conductor quark.
+Of course, our sliders only range from 0..1. And, we lose their values if we close the View. The link::Classes/NumericControlValue:: class, which provides a model for a numeric value, broadcasts updates when it changes, and can be connected to other objects that are interested in it's value. This class is almost identical in functionality to the CV class from the Conductor quark.
 code::
 (
 ~controls = [
@@ -185,17 +327,17 @@ code::
 ~view.onClose = { ~synth.free; ~connections.disconnect };
 
 ~connections = ConnectionList.makeWith {
-	~controls.connectEach(~sliders, \value, "value_(object.input)");
-	~controls.connectEach(~numbers, \value, "value_(object.value)");
-	~sliders.connectEach(~controls, \value, "input_(value)");
-	~numbers.connectEach(~controls, \value, "value_(value)");
+	~controls.connectEach(\input, ~sliders, _.valueSlot);
+	~controls.connectEach(\value, ~numbers, _.valueSlot);
+	~sliders.connectEach(\value, ~controls, _.inputSlot);
+	~numbers.connectEach(\value, ~controls, _.valueSlot);
 };
 
 s.waitForBoot {
 	s.makeBundle(nil, {
 		~synth = Synth(\connDemo);
 		~connections.addAll(
-			~controls.connectEach([
+			~controls.connectEach(\value, [
 				~synth.argSlot(\amp),
 				~synth.argSlot(\freq),
 				~synth.argSlot(\delay),
@@ -208,28 +350,23 @@ s.waitForBoot {
 )
 ::
 
-We can use link::Classes/Collection#connectEach:: to connect arrays of objects. It's shorthand for e.g.:
-code::
-~controls.do {
-	|control, i|
-	control.signal(\value).connectTo(~sliders[i].methodSlot("value_(object.input)"))
-}
-::
-
 We could have been more succinct when connecting code::~synth:: arguments by using code::argsSlots::, which returns a collection of slots for a argument list of names.
 code::
-~controls.connectEach(~synth.argSlots(\amp, \freq, \delay, \decay, \filterFreq));
-::
-
-NOTE::
-While Connection has some convenient methods for operating on collections of objects or methods, it is not an "automatic gui creation" library - there are much better tools for this.
-Instead, it attempts to provide semantically clear operations that can be composed in obvious ways to achieve what you want. In general, individual lines of code using Connection classes and methods
-express obvious relationships between objects, with little-to-no "magic" or behind-the-scenes inference of intent.
+~controls.connectEach(\value, ~synth.argSlots(\amp, \freq, \delay, \decay, \filterFreq));
 ::
 
 section::Connection modifiers
 Connection has modifier methods that allow you to express useful ways of handling or modifying updates between objects.
-)
+Connection modifiers can be applied in three ways.
+
+## They can be used as a method of objects returned by the .signal method.
+CODE:: object.signal(\value).filter(...).connectTo(dependant) ::
+
+## They can be used as a method modifying an existing connection.
+CODE:: object.signal(\value).connectTo(dependant).filter(...) ::
+
+## They can also be constructed as objects and connected in a chain with objects.
+CODE:: object.signal(\value).connectTo(UpdateFilter(...)).connectTo(dependant); ::
 
 subsection:: filter
 Filter will only allow updates through that match either a specified code::\key::, or for which a function returns true:

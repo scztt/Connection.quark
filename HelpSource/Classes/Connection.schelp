@@ -1,0 +1,184 @@
+TITLE:: Connection
+summary:: Represents a dependancy connection between two objects
+categories:: Connection
+related:: Guides/Connection
+
+DESCRIPTION::
+LINK::Classes/Connection:: represents a dependency connection between two objects.
+When the LINK::Classes/Object#-changed:: method of the left-hand object is called,
+the LINK::Classes/Object#-update:: method of the right-hand object is called.
+
+Creating a connection using:
+CODE::
+Connection(obj, dependantm, autoConnect:true)
+::
+is roughly equivalent to calling
+CODE::
+obj.addDependant(dependant);
+::
+
+Connections operate STRONG::on top of:: the existing changed/update/addDependant functionality, so they can
+interoperate with other SuperCollider functionality based around these methods (for example, LINK::Classes/SimpleController::).
+
+note::
+Connection's are not usually created via the Connection constructor.
+Instead, they should be created using LINK::Classes/Object#-connectTo::.
+This allows objects to override default behaviors when connecting.
+::
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new Connection between CODE::object:: and CODE::dependant::.
+ARGUMENT:: object
+Object that will be broadcasting changes.
+ARGUMENT:: dependant
+Object that will be receiving notification of changes.
+ARGUMENT:: autoConnect
+If CODE::false::, object will not be connected to the dependant immediately. It can be connected later using the LINK::#-connected:: method.
+
+METHOD:: traceAll
+When CODE::traceAll == true::, all new Connections will be created with tracing turned on. See LINK::Classes/Connection#-trace::
+Note that this will STRONG::not:: turn on tracing for Connections that have already been created.
+
+METHOD:: untraceAll
+Turn off tracing on all Connections that are currently being traced. See LINK::Classes/Connection#-trace::
+
+METHOD:: traceWith
+Execute function CODE::func:: and trace ALL connections created during that function, ONLY for the duration of the function.
+If CODE::traceAll == true::, all created connections will continue to be traced after the function is finished, otherwise they will not.
+
+
+INSTANCEMETHODS::
+
+METHOD:: connected
+When CODE::connected == true::, LINK::Classes/Object#-changed:: messages will be passed from the object to the dependant.
+ARGUMENT:: connect
+Boolean. CODE::false:: will disconnect the object from it's dependant.
+DISCUSSION::
+CODE::
+o = (); d = { |...args| "Updated: %".format(args).postln };
+c = o.connectTo(d);
+o.changed(\thisWillBeSent);
+c.connected = false;
+o.changed(\thisWillNotBeSent);
+c.connected = true;
+o.changed(\thisWillAlsoBeSent);
+::
+
+METHOD:: connect
+Synonym for code::connection.connected = true;::
+METHOD:: disconnect
+Synonym for code::connection.connected = false;::
+
+METHOD:: disconnectWith
+Execute function code::func:: - disconnect the Connection for the duration, and return it to it's previous state after func is done.
+Note that, if the connection was already disconnected, the connection will remain in a disconnected state.
+
+METHOD:: free
+Permanently disconnect the connection. This will free up resources and ensure all objects will be garbage collected.
+Connections cannot be reconnected after freeing.
+
+METHOD:: ++
+Concatenate with another LINK::Classes/Connection:: or LINK::Classes/ConnectionList::.
+RETURNS::
+A LINK::Classes/ConnectionList::.
+
+
+SUBSECTION:: Filters and modifiers
+
+METHOD:: transform
+Insert an LINK::Classes/UpdateTransform:: between the object and it's dependant.
+ARGUMENT:: func
+A LINK::Classes/Function:: to be used as the argument to the LINK::Classes/UpdateTransform:: constructor.
+DISCUSSION::
+CODE::
+o = (); d = { |...args| "Updated: %".format(args).postln };
+c = o.connectTo(d);
+o.changed(\foo, 1);
+c.transform({ |object, what, value| [object, what, value * 360] });
+o.changed(\foo, 1);
+::
+
+METHOD:: filter
+Insert an LINK::Classes/UpdateFilter:: between the object and it's dependant.
+ARGUMENT:: filter
+A LINK::Classes/Function:: or LINK::Classes/Symbol::, to be used as the argument to the LINK::Classes/UpdateFilter:: constructor.
+DISCUSSION::
+CODE::
+o = (); d = { |...args| "Updated: %".format(args).postln };
+c = o.connectTo(d).filter({ |object, what, value| value > 50 });
+o.changed(\foo, 10);   // not notified
+o.changed(\foo, 100);  // notified
+::
+
+METHOD:: oneShot
+Disconnect the connection the next time a signal is recieved.
+ARGUMENT:: shouldFree
+If code::shouldFree == true::, Connection will be free'd instead of disconnected.
+DISCUSSION::
+CODE::
+o = (); d = { |...args| "Updated: %".format(args).postln };
+c = o.connectTo(d).oneShot();
+o.changed(\onlyOnce);
+o.changed(\notThisOne);
+c.connected.postln;
+::
+
+METHOD:: defer
+Insert an LINK::Classes/DeferredUpdater:: between the object and it's dependant.
+ARGUMENT:: delta, clock, force
+Arguments passed along to the LINK::Classes/DeferredUpdater:: constructor.
+DISCUSSION::
+CODE::
+o = (); d = { |...args| "Updated: %".format(args).postln };
+c = o.connectTo(d).defer(3);
+o.changed(\foo, 10);   // notified 3 seconds later...
+::
+
+METHOD:: collapse
+Insert an LINK::Classes/CollapsedUpdater:: between the object and it's dependant.
+ARGUMENT:: delta, clock, force
+Arguments passed along to the LINK::Classes/CollapsedUpdater:: constructor.
+DISCUSSION::
+CODE::
+(
+o = (); d = { |...args| "Updated: %".format(args).postln };
+c = o.connectTo(d).collapse(1);
+fork {
+	(0..10).do {
+		|i|
+		o.changed(\collapsing, i);
+		0.3.wait;
+	}
+};
+)
+::
+
+
+SUBSECTION:: Debugging
+
+METHOD:: trace
+Enable or disable tracing for this connection. When tracing a connection, all signals passed from the object to the dependant
+will be displayed in the post window STRONG::even if:: the Connection is currently disconnected.
+
+code::⋯⋯:: indicates that the signal was passed along (e.g. connected == true);
+
+code::⋰⋰:: indicates that the signal was STRONG::not:: passed along (e.g. connected == false);
+
+DISCUSSION::
+CODE::
+o = (); d = { |...args| "Updated: %".format(args).postln };
+c = o.connectTo(d).trace(true);
+o.changed(\isConnected);
+c.disconnect();
+o.changed(\isNotConnected);
+::
+
+METHOD:: traceWith
+Turn tracing on for this connection for the duration of CODE::func::
+
+
+
+

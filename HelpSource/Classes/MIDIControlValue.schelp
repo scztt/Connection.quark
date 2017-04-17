@@ -1,0 +1,78 @@
+TITLE:: MIDIControlValue
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: defaultInputSpec
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: prSetFrom
+(describe method here)
+
+ARGUMENT:: other
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: inputSpec
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: isOwned
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: midiFunc
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: clearMIDIFunc
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: cc
+(describe method here)
+
+ARGUMENT:: ccNumOrFunc
+(describe argument here)
+
+ARGUMENT:: chan
+(describe argument here)
+
+ARGUMENT:: srcID
+(describe argument here)
+
+ARGUMENT:: argTemplate
+(describe argument here)
+
+ARGUMENT:: dispatcher
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: free
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

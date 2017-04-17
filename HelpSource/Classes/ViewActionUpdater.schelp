@@ -1,0 +1,81 @@
+TITLE:: ViewActionUpdater
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: isConnected
+(describe method here)
+
+ARGUMENT:: view
+(describe argument here)
+
+ARGUMENT:: actionName
+(describe argument here)
+
+ARGUMENT:: actionFunc
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: disable
+(describe method here)
+
+ARGUMENT:: view
+(describe argument here)
+
+ARGUMENT:: actionName
+(describe argument here)
+
+ARGUMENT:: func
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: actionFunc
+(describe method here)
+
+ARGUMENT:: propertyName
+(describe argument here)
+
+ARGUMENT:: signalName
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: enable
+(describe method here)
+
+ARGUMENT:: view
+(describe argument here)
+
+ARGUMENT:: actionName
+(describe argument here)
+
+ARGUMENT:: propertyName
+(describe argument here)
+
+ARGUMENT:: signalName
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: initClass
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

@@ -1,0 +1,62 @@
+TITLE:: DeferredUpdater
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: delta
+(describe argument here)
+
+ARGUMENT:: clock
+(describe argument here)
+
+ARGUMENT:: force
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: update
+(describe method here)
+
+ARGUMENT:: object
+(describe argument here)
+
+ARGUMENT:: what
+(describe argument here)
+
+ARGUMENT::  ... args
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT:: inDelta
+(describe argument here)
+
+ARGUMENT:: inClock
+(describe argument here)
+
+ARGUMENT:: inForce
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

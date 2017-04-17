@@ -1,0 +1,104 @@
+TITLE:: MethodSlot
+summary:: (put short description here)
+categories:: Undocumented classes
+related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: makeUpdateFunc
+(describe method here)
+
+ARGUMENT:: reciever
+(describe argument here)
+
+ARGUMENT:: methodName
+(describe argument here)
+
+ARGUMENT:: argOrder
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: prNew
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: obj
+(describe argument here)
+
+ARGUMENT:: method
+(describe argument here)
+
+ARGUMENT::  ... argOrder
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: connectionTraceString
+(describe method here)
+
+ARGUMENT:: what
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT:: inObject
+(describe argument here)
+
+ARGUMENT:: inMethodName
+(describe argument here)
+
+ARGUMENT:: argOrder
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: updateFunc
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: reciever
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: update
+(describe method here)
+
+ARGUMENT:: object
+(describe argument here)
+
+ARGUMENT:: changed
+(describe argument here)
+
+ARGUMENT::  ... args
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: methodName
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
