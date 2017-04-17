@@ -33,8 +33,6 @@ UpdateDispatcher {
 			connection.connect();
 		};
 		dispatchTable[item.key] = item;
-
-		connection.object.onSignalConnected(item.key, item.object);
 	}
 
 	*removeItem {
