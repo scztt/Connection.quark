@@ -90,7 +90,7 @@ MethodSlotUI : MethodSlot {
 ValueSlot : MethodSlot {
 	*new {
 		|obj, setter=\value_|
-		^super.new(obj, setter, \value)
+		^super.new(obj, "%(value)".format(setter))
 	}
 }
 
