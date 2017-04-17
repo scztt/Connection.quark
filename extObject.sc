@@ -26,6 +26,10 @@
 		^methods.collect(this.methodSlot(_))
 	}
 
+	forwardSlot {
+		^MethodSlot(this, "changed(changed, *args)")
+	}
+
 	connectTo {
 		|...dependants|
 		var autoConnect = if (dependants.last.isKindOf(Boolean)) { dependants.pop() } { true };
