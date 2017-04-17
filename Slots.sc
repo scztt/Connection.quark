@@ -15,7 +15,7 @@ MethodSlot {
 	init {
 		|object, methodString|
 		reciever = object;
-		methodName = methodString.split($()[0].asSymbol;
+		methodName = methodString.asString.split($()[0].asSymbol;
 		updateFunc = MethodSlot.makeUpdateFunc(reciever, methodString);
 	}
 
