@@ -7,21 +7,31 @@
 	}
 
 	connectEach {
-		|dependantList, signalName, method|
+		|signalNameOrFunc, dependantList, methodNameOrFunc|
 		if (this.size != dependantList.size) {
 			Error("connectEach requires collections of equal size (this.size = %, other.size = %)".format(this.size, dependantList.size)).throw;
+		};
+
+		if (signalNameOrFunc.notNil && signalNameOrFunc.isKindOf(Function).not) {
+			var tempVal = signalNameOrFunc;
+			signalNameOrFunc = { |o| o.signal(tempVal) };
+		};
+
+		if (methodNameOrFunc.notNil && methodNameOrFunc.isKindOf(Function).not) {
+			var tempVal = methodNameOrFunc;
+			methodNameOrFunc = { |o| o.methodSlot(tempVal) };
 		};
 
 		^this.collectAs({
 			|object, i|
 			var dependant = dependantList[i];
 
-			if (method.notNil) {
-				dependant = dependant.methodSlot(method);
+			if (methodNameOrFunc.notNil) {
+				dependant = methodNameOrFunc.value(dependant);
 			};
 
-			if (signalName.notNil) {
-				object = object.signal(signalName);
+			if (signalNameOrFunc.notNil) {
+				object = signalNameOrFunc.value(object);
 			};
 
 			object.connectTo(dependant);
