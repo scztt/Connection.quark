@@ -1,7 +1,7 @@
 title:: Connection overview
 summary:: An overview of the Connection quark
 related:: Classes/Connection
-categories:: Control
+categories:: Connection
 
 section::Description
 Connection provides a more convient, expressive, and powerful way of connecting and synchronizing objects, values, and UI views in SuperCollider.
