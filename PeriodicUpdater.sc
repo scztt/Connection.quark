@@ -192,8 +192,8 @@ OSCReplyUpdater {
 		^SynthDef(this.defName, {
 			var rateSymbol, trigger, values;
 
-			values = SynthDef.wrap(valueFunc ? this.defaultValueFunc);
-			trigger = SynthDef.wrap(triggerFunc ? this.defaultTriggerFunc, prependArgs:[values]);
+			values 		= SynthDef.wrap(valueFunc ? this.defaultValueFunc);
+			trigger 	= SynthDef.wrap(triggerFunc ? this.defaultTriggerFunc, prependArgs:[values]);
 
 			this.makeReply(values, trigger);
 		})
