@@ -359,6 +359,7 @@ section::Connection modifiers
 Connection has modifier methods that allow you to express useful ways of handling or modifying updates between objects.
 Connection modifiers can be applied in three ways.
 
+numberedlist::
 ## They can be used as a method of objects returned by the .signal method.
 CODE:: object.signal(\value).filter(...).connectTo(dependant) ::
 
@@ -367,6 +368,7 @@ CODE:: object.signal(\value).connectTo(dependant).filter(...) ::
 
 ## They can also be constructed as objects and connected in a chain with objects.
 CODE:: object.signal(\value).connectTo(UpdateFilter(...)).connectTo(dependant); ::
+::
 
 subsection:: filter
 Filter will only allow updates through that match either a specified code::\key::, or for which a function returns true:
