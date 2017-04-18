@@ -56,10 +56,12 @@ Connection {
 	}
 
 	connected {
+		var dependants;
 		traceConnection.notNil.if {
 			^traceConnection.connected
 		} {
-			^object.dependants !? { |d| d.includes(dependant) } ?? false;
+			dependants = object.dependants;
+			^dependants !? { dependants.includes(dependant) } ?? false;
 		}
 	}
 
@@ -129,6 +131,8 @@ Connection {
 
 	trace {
 		|shouldTrace=true|
+		var tempTrace;
+
 		if (shouldTrace) {
 			traceConnection ?? {
 				traceConnection = UpdateTracer(object, dependant, this);
@@ -138,7 +142,7 @@ Connection {
 			}
 		} {
 			traceConnection !? {
-				var tempTrace = traceConnection;
+				tempTrace = traceConnection;
 				traceConnection = nil;
 				object.removeDependant(tempTrace);
 				this.connected = tempTrace.connected;

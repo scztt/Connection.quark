@@ -15,10 +15,7 @@ UpdateDispatcher {
 
 	*free {
 		|object|
-		dispatcherDict[object] !? {
-			|d|
-			d.free;
-		};
+		dispatcherDict[object].free;
 	}
 
 	*addItem {
@@ -72,15 +69,21 @@ UpdateDispatcher {
 
 	update {
 		|obj, changed ...args|
-		dispatchTable[changed] !? {
-			|item|
+		var item = dispatchTable[changed];
+
+		item !? {
 			item.update(obj, changed, *args);
 		}
 	}
 
 	connectionTraceString {
 		|obj, what|
-		^dispatchTable[obj] !? { |conn| conn.dependant.connectionTraceString(obj, what) } ?? { "%(%) - no target".format(this.class, this.identityHash) }
+		var connection = dispatchTable[obj];
+		^connection !? {
+			connection.dependant.connectionTraceString(obj, what)
+		} ?? {
+			"%(%) - no target".format(this.class, this.identityHash)
+		}
 	}
 }
 

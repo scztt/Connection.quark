@@ -227,6 +227,8 @@ CollapsedUpdater : UpdateForwarder {
 
 	update {
 		|object, what ...args|
+		var tmpdeferredUpdate;
+
 		if (holdUpdates) {
 			deferredUpdate = [object, what, args];
 		} {
@@ -239,7 +241,7 @@ CollapsedUpdater : UpdateForwarder {
 			clock.sched(delta, {
 				holdUpdates = false;
 				if (deferredUpdate.notNil) {
-					var tmpdeferredUpdate = deferredUpdate;
+					tmpdeferredUpdate = deferredUpdate;
 					deferredUpdate = nil;
 					this.update(tmpdeferredUpdate[0], tmpdeferredUpdate[1], *tmpdeferredUpdate[2]);
 				};

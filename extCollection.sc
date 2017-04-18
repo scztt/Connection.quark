@@ -8,17 +8,19 @@
 
 	connectEach {
 		|signalNameOrFunc, dependantList, methodNameOrFunc|
+		var tempVal;
+
 		if (this.size != dependantList.size) {
 			Error("connectEach requires collections of equal size (this.size = %, other.size = %)".format(this.size, dependantList.size)).throw;
 		};
 
 		if (signalNameOrFunc.notNil && signalNameOrFunc.isKindOf(Function).not) {
-			var tempVal = signalNameOrFunc;
+			tempVal = signalNameOrFunc;
 			signalNameOrFunc = { |o| o.signal(tempVal) };
 		};
 
 		if (methodNameOrFunc.notNil && methodNameOrFunc.isKindOf(Function).not) {
-			var tempVal = methodNameOrFunc;
+			tempVal = methodNameOrFunc;
 			methodNameOrFunc = { |o| o.methodSlot(tempVal) };
 		};
 
