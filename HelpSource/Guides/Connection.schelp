@@ -146,7 +146,7 @@ CODE::
 
 
 SUBSECTION:: Connecting multiple objects
-The code::Classes/Connection#-connectTo:: method can take multiple objects, and will connect all of them.
+The link::Classes/Connection#-connectTo:: method can take multiple objects, and will connect all of them.
 This makes it easy to create STRONG::a one-to-many connection::.
 For example: code::slider.connectAll(a, b, c)::.
 
@@ -180,7 +180,7 @@ objectList.do {
 ::
 
 In short, the two functions should take list items and provide an appropriate object or dependent to be connected.
-If you specify a Symbol or a String instead, these are taken to be arguments to t objects .signal or .methodSlot methods. So, the following are equivalent:
+If you specify a Symbol or a String instead, these are taken to be arguments to the objects .signal or .methodSlot methods. So, the following are equivalent:
 
 CODE::
 ~sliders.connectEach(\value, ~numbers, "value_(value)");
@@ -244,7 +244,7 @@ Routine({
 
 section::Slots
 The code::valueSlot:: method above is a specific case of the more general code::methodSlot::, which allows you to forward updates to a specific method of an object.
-This functionality is provided by code::Classes/MethodSlot::, which you generally create via code::object.methodSlot("methodName")::.
+This functionality is provided by link::Classes/MethodSlot::, which you generally create via code::object.methodSlot("methodName")::.
 code::
 (
 ~object = Object();
