@@ -142,6 +142,22 @@ NumericControlValue : AbstractControlValue {
 
 IndexedControlValue : AbstractControlValue {
 	*defaultSpec { ^ItemsSpec([]) }
+
+	next {
+		var index;
+		if (spec.items.size > 0) {
+			index = spec.items.indexOf(this.value);
+			this.value = spec.items.wrapAt(index + 1);
+		}
+	}
+
+	prev {
+		var index;
+		if (spec.items.size > 0) {
+			index = spec.items.indexOf(this.value);
+			this.value = spec.items.wrapAt(index - 1);
+		}
+	}
 }
 
 BusControlValue : NumericControlValue {
