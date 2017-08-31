@@ -19,3 +19,20 @@
 		}
 	}
 }
+
++NodeProxy {
+	argSlot {
+		|argName|
+		^SynthArgSlot(this, argName)
+	}
+
+	argSlots {
+		|...argNames|
+		^argNames.collect(this.argSlot(_))
+	}
+
+	mapToArgs {
+		|...associations|
+		^this.group.mapToArgs(*associations)
+	}
+}
