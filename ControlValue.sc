@@ -122,9 +122,9 @@ AbstractControlValue {
 
 	prSetFrom {
 		|other|
-		this.updateOnConnect = other.updateOnConnect;
-		this.spec = other.spec;
-		this.value = other.value;
+		this.updateOnConnect	= other.updateOnConnect;
+		this.spec				= other.spec;
+		this.value				= other.value;
 	}
 
 	asControlInput {
