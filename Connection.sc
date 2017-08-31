@@ -187,11 +187,6 @@ Connection {
 		this.disconnect();
 	}
 
-	connectTo {
-		|nextDependant|
-		^Connection(this, nextDependant);
-	}
-
 	chain {
 		|newDependant|
 		var newConnection, wasTracing = traceConnection.notNil;
@@ -223,6 +218,7 @@ Connection {
 		|func|
 		^this.filter({ |obj, what ...vals| func.(*vals) });
 	}
+
 	transform {
 		|func|
 		this.chain(UpdateTransform(func))
@@ -352,11 +348,6 @@ ConnectionList : List {
 
 	releaseDependants {
 		this.do(_.releaseDependants());
-	}
-
-	connectTo {
-		|nextDependant, autoConnect=true|
-		^Connection(this, nextDependant, autoConnect);
 	}
 
 	chain {
