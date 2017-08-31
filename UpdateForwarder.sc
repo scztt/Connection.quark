@@ -206,13 +206,20 @@ OneShotUpdater : UpdateForwarder {
 }
 
 CollapsedUpdater : UpdateForwarder {
-	var clock, force, delta;
+	var clock, force, delta, <collapseFunc;
 	var deferredUpdate;
 	var holdUpdates=false;
 
+	*defaultCollapseFunc {
+		^{
+			|nextUpdate|
+			nextUpdate
+		}
+	}
+
 	*new {
 		|delta=0, clock=(AppClock), force=true|
-		^super.new.init(delta, clock, force)
+		^super.new.init(delta, clock, force).collapseFunc_(this.defaultCollapseFunc)
 	}
 
 	init {
@@ -220,6 +227,11 @@ CollapsedUpdater : UpdateForwarder {
 		clock = inClock;
 		force = inForce;
 		delta = inDelta;
+	}
+
+	collapseFunc_{
+		|func|
+		collapseFunc = func;
 	}
 
 	deferIfNeeded {
@@ -231,12 +243,17 @@ CollapsedUpdater : UpdateForwarder {
 		}
 	}
 
+	collapseUpdate_{
+		|update|
+		deferredUpdate = update;
+	}
+
 	update {
 		|object, what ...args|
 		var tmpdeferredUpdate;
 
 		if (holdUpdates) {
-			deferredUpdate = [object, what, args];
+			deferredUpdate = collapseFunc.value([object, what, args], deferredUpdate);
 		} {
 			holdUpdates = true;
 
