@@ -13,6 +13,7 @@ AbstractControlValue {
 	init {
 		|initialValue, inSpec|
 		spec	= inSpec !? { inSpec.asSpec } ?? { this.class.defaultSpec.deepCopy };
+		value	= initialValue;
 		this.constrain(true);
 	}
 
