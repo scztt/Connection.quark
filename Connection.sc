@@ -247,6 +247,22 @@ Connection {
 		|other|
 		^(this.asCollection ++ other);
 	}
+
+	uniqueConnectionAt {
+		|name|
+		^UniqueConnections.at(dependant, name)
+	}
+
+	uniqueConnectionPut {
+		|name, value|
+		UniqueConnections.put(dependant, name, value)
+	}
+
+	makeUnique {
+		|name|
+		this.uniqueConnectionAt(name).free;
+		this.uniqueConnectionPut(name, this);
+	}
 }
 
 ConnectionList : List {
@@ -376,5 +392,21 @@ ConnectionList : List {
 	++ {
 		|other|
 		^this.class.newFrom(this.superPerform('++', other))
+	}
+
+	uniqueConnectionAt {
+		|name|
+		^ConnectionList.newFrom(this.collect(_.uniqueConnectionsAt(name)))
+	}
+
+	uniqueConnectionPut {
+		|name, value|
+		this.do(_.uniqueConnectionsPut(name, value))
+	}
+
+	makeUnique {
+		|name|
+		this.uniqueConnectionAt(name).free;
+		this.uniqueConnectionPut(name, this);
 	}
 }
