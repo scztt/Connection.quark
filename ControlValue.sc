@@ -415,15 +415,51 @@ OSCControlValue : NumericControlValue {
 	}
 
 }
+
 ControlValueEnvir : EnvironmentRedirect {
 	var <default, redirect;
 	var envir;
 	var <allowCreate=true;
 
 	*new {
-		|default=(NumericControlValue)|
+		|type=(NumericControlValue)|
 		var envir = Environment();
-		^super.new().default_(default).know_(true)
+		^super.new().default_(type).know_(true)
+	}
+
+	*newFromSpecs {
+		|specs, type|
+		^this.new(type).addSpecs(specs);
+	}
+
+	resetToDefault {
+		this.envir.keysValueDo {
+			|key, val|
+			val.value = val.spec.default;
+		}
+	}
+
+	asSynthArgs {
+		|...keys|
+		if (keys.size == 0) {
+			^this.envir.asPairs
+		} {
+			^[keys, this.envir.atAll(keys)].flop.flatten
+		}
+	}
+
+	asSynthMapArgs {
+		|...keys|
+		var vals = this.asSynthArgs(*keys);
+		var newVals = Array(vals.size);
+
+		vals = vals.pairsDo({
+			|key, val|
+			newVals.add(key);
+			newVals.add(val.asMap);
+		});
+
+		^newVals
 	}
 
 	default_{
@@ -457,3 +493,109 @@ ControlValueEnvir : EnvironmentRedirect {
 		}
 	}
 
+	setSpecs {
+		|specs|
+		specs.keysValuesDo {
+			|name, spec|
+			this.at(name).spec = spec
+		};
+	}
+
+	setValues {
+		|envir|
+		var control;
+
+		envir.keysValuesDo {
+			|key, value|
+			control = super.at(key);
+			control !? {
+				control.value = value;
+			}
+		}
+	}
+
+	setInputs {
+		|envir|
+		var control;
+
+		envir.keysValuesDo {
+			|key, input|
+			control = super.at(key);
+			control !? {
+				control.input = input;
+			}
+		}
+	}
+
+	storeValues {
+		|name|
+		var string, header, doc, longestKey = 10;
+
+		name = name ? "_";
+
+		header = "// ControlValueEnvir preset: %\n".format(name);
+		string = header ++ "(\n";
+
+		this.envir.keys.do {
+			|name|
+			longestKey = max(longestKey, name.asString.size + 1);
+		};
+
+		this.envir.keysValuesDo {
+			|key, val|
+			string = string ++ "\t";
+			string = string ++ "%:".format(key.asString).padRight(longestKey + 4);
+			string = string ++ "%,\n".format(val.value.asCompileString);
+		};
+
+		string = string ++ ")\n";
+		doc = Document(name, string);
+		{
+			doc.promptToSave = false;
+			doc.front;
+			doc.selectRange(header.size, string.size - header.size);
+		}.defer(0.2);
+
+		^string;
+	}
+
+	mapToSynthArgs {
+		|node ...keys|
+
+		if (keys.size == 0) {
+			keys = this.envir.keys;
+		};
+
+		// Fix for nodeproxy - we DON'T want to map to fadeTime!
+		if (node.isKindOf(NodeProxy)) {
+			keys.remove(\fadeTime);
+			keys.remove(\gate);
+		};
+
+		node.map(*this.asSynthMapArgs(*keys.asArray))
+	}
+
+	connectToSynthArgs {
+		|node ...keys|
+		var connections = Array(this.envir.size);
+
+		if (keys.size == 0) {
+			keys = this.envir.keys;
+		};
+
+		// Fix for nodeproxy - we DON'T want to map to fadeTime!
+		if (node.isKindOf(NodeProxy)) {
+			keys.remove(\fadeTime);
+			keys.remove(\gate);
+		};
+
+		keys.do {
+			|name|
+			connections.add(
+				this.envir.at(name).signal(\value).connectTo(node.argSlot(name))
+			)
+		};
+
+		^ConnectionList.newFrom(connections);
+	}
+}
