@@ -16,6 +16,10 @@ AbstractControlValue {
 		this.constrain(true);
 	}
 
+	name {
+		^name ?? { spec.units };
+	}
+
 	value {
 		^(value ?? { spec.default })
 	}
