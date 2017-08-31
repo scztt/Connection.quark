@@ -87,12 +87,12 @@
 
 	mapToSlots {
 		|...associations|
-		^ConnectionList.make {
-			associations.do {
+		^ConnectionList.newFrom(
+			associations.collect {
 				|assoc|
 				assoc.key.connectTo(this.methodSlot(assoc.value));
 			}
-		}
+		)
 	}
 
 	signal {
