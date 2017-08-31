@@ -74,6 +74,11 @@ UpdateForwarder {
 		^this.chain(UpdateFilter, func);
 	}
 
+	valueFilter {
+		|func|
+		^this.filter({ |obj, what ...vals| func.(*vals) });
+	}
+
 	transform {
 		|func|
 		^this.chain(UpdateTransform, func);
