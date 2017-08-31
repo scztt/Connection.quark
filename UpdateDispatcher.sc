@@ -119,4 +119,15 @@ UpdateDispatcherItem : UpdateForwarder {
 		object = nil;
 		key = nil;
 	}
+
+	uniqueConnectionAt {
+		|name|
+		^UniqueConnections.at(object, key, name)
+	}
+
+	uniqueConnectionPut {
+		|name, value|
+		^UniqueConnections.put(object, key, name, value)
+	}
+
 }
