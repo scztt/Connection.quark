@@ -346,6 +346,75 @@ MIDIControlValue : NumericControlValue {
 	}
 }
 
+OSCControlValue : NumericControlValue {
+	var <inputSpec, <isOwned=false;
+	var func, <oscFunc, <index=1;
+
+	*defaultInputSpec { ^nil }
+
+	index_{
+		|i|
+		index = i;
+	}
+
+	src_{
+		| pathOrFunc, srcID, recvPort, argTemplate, dispatcher |
+		inputSpec = inputSpec ?? { this.class.defaultInputSpec };
+
+		func = func ? {
+			|val|
+			index !? { val = val[index] };
+			if (inputSpec.notNil) {
+				this.input = inputSpec.unmap(val);
+			} {
+				this.value = val;
+			}
+		};
+
+		this.clearOSCFunc();
+
+		if (pathOrFunc.notNil) {
+			if (pathOrFunc.isKindOf(OSCFunc)) {
+				isOwned = false;
+				oscFunc = pathOrFunc;
+				oscFunc.add(func);
+			} {
+				isOwned = true;
+				oscFunc = OSCFunc(func, pathOrFunc, srcID, recvPort, argTemplate, dispatcher);
+			}
+		}
+	}
+
+	prSetFrom {
+		|other|
+		super.prSetFrom(other);
+		this.inputSpec = other.inputSpec;
+		if (other.oscFunc.notNil) {
+			this.src_(
+				other.oscFunc.path,
+				other.oscFunc.srcID,
+				other.oscFunc.recvPort,
+				other.oscFunc.argTemplate,
+				other.oscFunc.dispatcher
+			)
+		}
+	}
+
+	free {
+		this.clearOSCFunc();
+	}
+
+	clearOSCFunc {
+		if (oscFunc.notNil) {
+			oscFunc.remove(func);
+			if (isOwned) {
+				oscFunc.free;
+			};
+			oscFunc = nil;
+		}
+	}
+
+}
 ControlValueEnvir : EnvironmentRedirect {
 	var <default, redirect;
 	var envir;
@@ -387,5 +456,4 @@ ControlValueEnvir : EnvironmentRedirect {
 			control.setFrom(value);
 		}
 	}
-}
 
