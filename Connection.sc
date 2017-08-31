@@ -219,6 +219,10 @@ Connection {
 		}
 	}
 
+	valueFilter {
+		|func|
+		^this.filter({ |obj, what ...vals| func.(*vals) });
+	}
 	transform {
 		|func|
 		this.chain(UpdateTransform(func))
@@ -363,6 +367,11 @@ ConnectionList : List {
 	filter {
 		|filter|
 		this.do(_.filter(filter));
+	}
+
+	valueFilter {
+		|func|
+		^this.filter({ |obj, what ...vals| func.(*vals) });
 	}
 
 	transform {
