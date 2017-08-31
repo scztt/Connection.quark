@@ -1,5 +1,6 @@
 UpdateForwarder {
-	var <dependants;
+	var 		<dependants;
+	var 		<namedDependants;
 
 	*new {
 		^super.new.prInitDependants;
