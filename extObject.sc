@@ -26,8 +26,20 @@
 		^methods.collect(this.methodSlot(_))
 	}
 
-	forwardSlot {
+	delegateSlot {
 		^MethodSlot(this, "changed(changed, *args)")
+	}
+
+
+	forwardSlot {
+		^MethodSlot(this, "forwardUpdate(object, changed, *args)")
+	}
+
+	forwardUpdate {
+		|...args|
+		dependantsDictionary.at(this).copy.do({ arg item;
+			item.update(*args);
+		});
 	}
 
 	connectTo {
