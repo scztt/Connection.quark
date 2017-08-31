@@ -247,11 +247,6 @@ OnOffControlValue : AbstractControlValue {
 
 	*defaultSpec { ^ItemSpec([\off, \on]) }
 
-	init {
-		|initialValue|
-		^super.init(initialValue);
-	}
-
 	on {
 		this.value = \on;
 	}
