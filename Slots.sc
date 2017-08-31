@@ -102,8 +102,20 @@ SynthArgSlot {
 	}
 
 	connectSynth {
-		synth.register;
-		synthConn = synth.signal(\n_end).connectTo(this.methodSlot(\disconnectSynth))
+		var endSig;
+		if (synth.respondsTo(\register)) {
+			synth.register;
+		};
+
+		if(synth.isKindOf(Node)) {
+			endSig = \n_end
+		} {
+			if (synth.isKindOf(NodeProxy)) {
+				endSig = \end
+			}
+		};
+
+		synthConn = synth.signal(\end).connectTo(this.methodSlot(\disconnectSynth))
 	}
 
 	disconnectSynth {
@@ -121,11 +133,23 @@ SynthArgSlot {
 	spec {
 		var spec, def;
 
-		def = synth.def;
+		def = synth.respondsTo(\def).if({ synth.def });
+
 		if (def.notNil and: { def.metadata.notNil } and: { def.metadata[\spec].notNil }) {
 			spec = def.metadata[\spec][argName];
+		};
+
+		if (spec.isNil) {
+			spec = argName.asSpec;
 		};
 
 		^spec;
 	}
 }
+
++NodeProxy {
+	asSynth {
+		^this.group
+	}
+}
+
