@@ -1,5 +1,6 @@
 AbstractControlValue {
-	var value, <spec, specConnection, specConnection, <>updateOnConnect=true, <>holdUpdates=false;
+	var value, <spec, specConnection, <>updateOnConnect=true, <>holdUpdates=false;
+	var >name;
 	var inputTransform;
 	var prIsChanging=false;
 
