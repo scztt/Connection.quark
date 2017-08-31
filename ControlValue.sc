@@ -41,23 +41,23 @@ AbstractControlValue {
 
 	addDependant {
 		|dependant|
-		var value;
-
 		super.addDependant(dependant);
 
-		if (updateOnConnect) {
-			value = this.value;
-			dependant.update(this, \value, value, spec.unmap(value));
-		}
+		this.onSignalDependantAdded(\value, dependant)
 	}
 
 	onSignalDependantAdded {
 		|signal, dependant|
 		var value;
 
-		if (updateOnConnect && ((signal == \value) || (signal == \input))) {
-			value = this.value;
-			dependant.update(this, \value, value, spec.unmap(value));
+		if (updateOnConnect) {
+			if (signal == \value) {
+				value = this.value;
+				dependant.update(this, \value, value, spec.unmap(value));
+			};
+			if (signal == \input) {
+				dependant.update(this, \input, this.input);
+			};
 		}
 	}
 
