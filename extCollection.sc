@@ -58,4 +58,15 @@
 		|argName|
 		^this.collect(_.argSlot(argName));
 	}
+
+	signalsDo {
+		|signal, func|
+		this.collect(_.signal(signal)).do(func);
+	}
+
+	signalsCollect {
+		|signal, func|
+		func = func ? {|s|s}; // IMPORTANT: we want the function, not the evaluated result
+		^this.collect(_.signal(signal)).collect(func);
+	}
 }
