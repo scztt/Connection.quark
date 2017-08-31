@@ -298,7 +298,7 @@ SignalStatsUpdater : OSCReplyUpdater {
 
 
 BusStatsUpdater : SignalStatsUpdater {
-	var <bus;
+	var <bus, <inputBus=false;
 
 	*new {
 		|bus, statsFunc, server, rate|
@@ -309,11 +309,22 @@ BusStatsUpdater : SignalStatsUpdater {
 
 	makeInputFunc {
 		^{
+			var class = inputBus.if(SoundIn, In);
+
 			if (bus.asBus.rate == \audio) {
-				bus.asBus.ar();
-			} {
-				bus.asBus.kr();
+				class.ar(bus.asBus.index, bus.numChannels);
+ 			} {
+				class.kr(bus.asBus.index, bus.numChannels);
 			}
+		}
+	}
+
+	inputBus_{
+		|b|
+		if (inputBus != b) {
+			inputBus = b;
+			inputFunc = this.makeInputFunc();
+			this.updateSynthDef();
 		}
 	}
 
@@ -323,14 +334,6 @@ BusStatsUpdater : SignalStatsUpdater {
 			bus = inBus;
 			inputFunc = this.makeInputFunc();
 			this.updateSynthDef();
-		}
-	}
-}
-
-InputBusStatsUpdater : BusStatsUpdater {
-	makeInputFunc {
-		^{
-			SoundIn.ar(this.bus)
 		}
 	}
 }
