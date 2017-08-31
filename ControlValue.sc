@@ -166,7 +166,7 @@ IndexedControlValue : AbstractControlValue {
 }
 
 BusControlValue : NumericControlValue {
-	var bus, <>server;
+	var bus, <>server, <channels;
 
 	init {
 		|initialValue, inSpec|
@@ -177,6 +177,8 @@ BusControlValue : NumericControlValue {
 		ServerTree.add(this);
 		ServerQuit.add(this);
 		ServerBoot.add(this);
+
+		channels = initialValue !? { initialValue.asArray.size } ?? 1;
 
 		if (Server.default.serverRunning) {
 			this.doOnServerBoot();
@@ -215,12 +217,12 @@ BusControlValue : NumericControlValue {
 	sendBus {
 		if (bus.isNil) {
 			bus = Bus.control(server, 1);
-			bus.set(this.value);
+			this.prSendValue();
 		}
 	}
 
 	prSendValue {
-		bus !? { bus.set(this.value) };
+		bus !? { bus.set(*this.value) };
 	}
 
 	free {
