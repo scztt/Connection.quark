@@ -134,6 +134,10 @@ AbstractControlValue {
 	asStream {
 		^Routine { loop { this.asControlInput.yield } }
 	}
+
+	free {
+		this.releaseDependants();
+	}
 }
 
 NumericControlValue : AbstractControlValue {
