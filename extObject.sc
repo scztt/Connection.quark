@@ -55,6 +55,36 @@
 		}
 	}
 
+	uniqueConnectionAt {
+		|name|
+		^UniqueConnections.at(this, name)
+	}
+
+	uniqueConnectionPut {
+		|name, value|
+		UniqueConnections.put(this, name, value)
+	}
+
+	connectToUnique {
+		|name ...dependants|
+		var connection;
+
+		if (name.isKindOf(String)) {
+			name = name.asSymbol
+		};
+
+		if (name.isKindOf(Symbol).not) {
+			dependants = [name] ++ dependants;
+			name = \defaultUniqueConnection;
+		};
+
+		this.uniqueConnectionAt(name).free;
+		connection = this.connectTo(*dependants);
+		this.uniqueConnectionPut(name, connection);
+
+		^connection
+	}
+
 	mapToSlots {
 		|...associations|
 		^ConnectionList.make {
