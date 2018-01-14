@@ -51,7 +51,15 @@ BusUpdater : PeriodicUpdater {
 	bus_{
 		|inBus|
 		object = inBus;
-		inBus !? { server = inBus.server };
+		inBus !? {
+			ServerQuit.add(this);
+			server = inBus.server
+		};
+	}
+
+	doOnServerQuit {
+		object = nil;
+		this.releaseDependants();
 	}
 
 	pull {
