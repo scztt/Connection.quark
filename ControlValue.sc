@@ -79,7 +79,7 @@ AbstractControlValue {
 
 	spec_{
 		|inSpec|
-		spec.setFrom(inSpec);
+		spec.setFrom(inSpec.asSpec);
 
 		this.constrain();
 	}
