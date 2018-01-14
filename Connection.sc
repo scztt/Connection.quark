@@ -1,6 +1,6 @@
 Connection {
 	classvar <collectionStack;
-	classvar <tracing, <>traceAll=false;
+	classvar <tracing, <>traceAll=false, <>traceFunc;
 
 	var <object, <dependant;
 
@@ -120,13 +120,17 @@ Connection {
 		to = dependant.isKindOf(UpdateTracer).if({ dependant.wrappedObject }, { dependant });
 		connectedSym = this.connected.if("⋯", "⋰");
 
-		"% %.signal(%) → %\t =[%]".format(
-			connectedSym++connectedSym,
-			from.connectionTraceString(obj, what),
-			"\\" ++ what,
-			to.connectionTraceString(obj, what),
-			(values.collect(_.asCompileString)).join(","),
-		).postln
+		if (traceFunc.notNil) {
+			traceFunc.value(from, to, obj, what, values)
+		} {
+			"% %.signal(%) → %\t =[%]".format(
+				connectedSym++connectedSym,
+				from.connectionTraceString(obj, what),
+				"\\" ++ what,
+				to.connectionTraceString(obj, what),
+				(values.collect(_.asCompileString)).join(","),
+			).postln
+		}
 	}
 
 	trace {
