@@ -1,5 +1,5 @@
 PeriodicUpdater {
-	var <>object, <method, <clock, <>delegate;
+	var <>object, <>method, <clock, <>delegate;
 	var <freq, <>name;
 	var <process, <lastVal;
 
