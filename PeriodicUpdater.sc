@@ -239,7 +239,7 @@ SignalStatsUpdater : OSCReplyUpdater {
 		|inputFunc, statsFunc, server, rate|
 		^(this.basicNew(server, rate)
 			.inputFunc_(inputFunc)
-			.statsFunc_(statsFunc))
+			.valueFunc_(statsFunc))
 	}
 
 	minMaxAvgFunc {
