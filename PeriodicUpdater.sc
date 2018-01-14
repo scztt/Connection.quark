@@ -318,8 +318,9 @@ BusStatsUpdater : SignalStatsUpdater {
 	makeInputFunc {
 		^{
 			var class = inputBus.if(SoundIn, In);
+			var rate = inputBus.if(\audio, bus.asBus.rate);
 
-			if (bus.asBus.rate == \audio) {
+			if (rate == \audio) {
 				class.ar(bus.asBus.index, bus.numChannels);
  			} {
 				class.kr(bus.asBus.index, bus.numChannels);
