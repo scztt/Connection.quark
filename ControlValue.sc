@@ -419,13 +419,11 @@ OSCControlValue : NumericControlValue {
 
 ControlValueEnvir : EnvironmentRedirect {
 	var <default, redirect;
-	var envir;
 	var <allowCreate=true;
 
 	*new {
 		|type=(NumericControlValue)|
-		var envir = Environment();
-		^super.new().default_(type).know_(true)
+		^super.new(Environment()).default_(type).know_(true)
 	}
 
 	*newFromSpecs {
@@ -434,7 +432,7 @@ ControlValueEnvir : EnvironmentRedirect {
 	}
 
 	resetToDefault {
-		this.envir.keysValueDo {
+		envir.keysValueDo {
 			|key, val|
 			val.value = val.spec.default;
 		}
@@ -443,9 +441,9 @@ ControlValueEnvir : EnvironmentRedirect {
 	asSynthArgs {
 		|...keys|
 		if (keys.size == 0) {
-			^this.envir.asPairs
+			^envir.asPairs
 		} {
-			^[keys, this.envir.atAll(keys)].flop.flatten
+			^[keys, envir.atAll(keys)].flop.flatten
 		}
 	}
 
@@ -537,12 +535,12 @@ ControlValueEnvir : EnvironmentRedirect {
 		header = "// ControlValueEnvir preset: %\n".format(name);
 		string = header ++ "(\n";
 
-		this.envir.keys.do {
+		envir.keys.do {
 			|name|
 			longestKey = max(longestKey, name.asString.size + 1);
 		};
 
-		this.envir.keysValuesDo {
+		envir.keysValuesDo {
 			|key, val|
 			string = string ++ "\t";
 			string = string ++ "%:".format(key.asString).padRight(longestKey + 4);
@@ -564,7 +562,7 @@ ControlValueEnvir : EnvironmentRedirect {
 		|node ...keys|
 
 		if (keys.size == 0) {
-			keys = this.envir.keys;
+			keys = envir.keys;
 		};
 
 		// Fix for nodeproxy - we DON'T want to map to fadeTime!
@@ -578,10 +576,10 @@ ControlValueEnvir : EnvironmentRedirect {
 
 	connectToSynthArgs {
 		|node ...keys|
-		var connections = Array(this.envir.size);
+		var connections = Array(envir.size);
 
 		if (keys.size == 0) {
-			keys = this.envir.keys;
+			keys = envir.keys;
 		};
 
 		// Fix for nodeproxy - we DON'T want to map to fadeTime!
@@ -593,7 +591,7 @@ ControlValueEnvir : EnvironmentRedirect {
 		keys.do {
 			|name|
 			connections.add(
-				this.envir.at(name).signal(\value).connectTo(node.argSlot(name))
+				envir.at(name).signal(\value).connectTo(node.argSlot(name))
 			)
 		};
 
