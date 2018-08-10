@@ -140,6 +140,12 @@ AbstractControlValue {
 	free {
 		this.releaseDependants();
 	}
+
+	embedInStream {
+		|inval|
+		^this.value.yield;
+	}
+
 }
 
 NumericControlValue : AbstractControlValue {
