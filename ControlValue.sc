@@ -615,6 +615,8 @@ ControlValueEnvir : EnvironmentRedirect {
 			)
 		};
 
-		^ConnectionList.newFrom(connections);
+		connections = ConnectionList.newFrom(connections);
+		connections.freeAfter(node);
+		^connections
 	}
 }
