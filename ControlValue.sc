@@ -250,10 +250,8 @@ BusControlValue : NumericControlValue {
 
 	free {
 		super.free();
-
-		if (bus.notNil) {
-			bus.free; bus = nil;
-		};
+		bus.free;
+		bus = nil;
 	}
 
 	asMap { ^this.bus.asMap }
