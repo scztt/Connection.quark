@@ -239,7 +239,7 @@ Connection {
 	}
 
 	oneShot {
-		|shouldFree=false|
+		|shouldFree=true|
 		this.chain(OneShotUpdater(this, shouldFree));
 	}
 
