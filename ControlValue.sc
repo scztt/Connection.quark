@@ -41,6 +41,22 @@ AbstractControlValue {
 		^spec.unmap(this.value);
 	}
 
+	defaultIncrement {
+		^(spec.step > 0).if(spec.step, 1/200);
+	}
+
+	increment {
+		|amount|
+		amount = amount ?? { this.defaultIncrement };
+		this.input = this.input + amount;
+	}
+
+	decrement {
+		|amount|
+		amount = amount ?? { this.defaultIncrement };
+		^this.increment(amount.neg);
+	}
+
 	addDependant {
 		|dependant|
 		super.addDependant(dependant);
