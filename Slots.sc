@@ -17,6 +17,7 @@ MethodSlot {
 		reciever = object;
 		methodName = methodString.asString.split($()[0].asSymbol;
 		updateFunc = MethodSlot.makeUpdateFunc(reciever, methodString);
+		object.tryPerform(\autoReleaseDependants);
 	}
 
 	*makeUpdateFunc {
