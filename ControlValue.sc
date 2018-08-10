@@ -448,7 +448,7 @@ ControlValueEnvir : EnvironmentRedirect {
 
 	*newFromSpecs {
 		|specs, type|
-		^this.new(type).addSpecs(specs);
+		^this.new(type).setSpecs(specs);
 	}
 
 	resetToDefault {
