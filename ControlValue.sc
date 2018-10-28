@@ -257,11 +257,6 @@ BusControlValue : NumericControlValue {
 	asMap { ^this.bus.asMap }
 	asBus { ^this.bus }
 }
-		}
-	}
-
-	asMap { ^this.bus.asMap }
-}
 
 OnOffControlValue : AbstractControlValue {
 	var value, onSig, offSig;
