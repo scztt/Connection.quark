@@ -1,6 +1,6 @@
 +View {
 	autoReleaseDependants {
-		this.onClose = this.onClose.add({ |v| v.releaseDependants });
+		this.onClose = this.onClose.addFunc({ |v| v.releaseDependants });
 	}
 }
 
