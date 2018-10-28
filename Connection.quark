@@ -6,12 +6,15 @@
        license: "MIT",
        version: "0.0.2-alpha",
         schelp: "",
-          test: "",
+          test: "
+",
            url: "http://github.com/scztt/Connection.quark",
   dependencies: [
-              		"Singleton@1.0.1",
-              		"FreeAfter@1.0.0"
-                ],
+              		"Singleton",
+              		"FreeAfter"
+                ] ++ ((Main.scVersionMajor <= 3) && (Main.scVersionMinor < 9)).if([
+					"UnitTesting@2a8f5e18aaa7cd25968ec094bbfa75a7fb3094b6"
+				]),
   isCompatible: true ,
          since: ""
 )
