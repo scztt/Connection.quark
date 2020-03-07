@@ -617,4 +617,16 @@ ControlValueEnvir : EnvironmentRedirect {
 		connections.freeAfter(node);
 		^connections
 	}
+
+	asPbind {
+		^Pbind(
+			*(envir.keys.asArray.collect {
+				|name|
+				[name, super.at(name).asStream]
+			}).flatten
+		)
+	}
+
+	keys { ^envir.keys }
+	values { ^envir.values }
 }
