@@ -28,8 +28,11 @@ AbstractControlValue {
 
 	value_{
 		|inVal|
-		value = spec.constrain(inVal);
-		this.changed(\value, value, spec.unmap(value));
+		inVal = spec.constrain(inVal);
+		if (inVal != value) {
+			value = inVal;
+			this.changed(\value, value, spec.unmap(value));
+		}
 	}
 
 	input_{
