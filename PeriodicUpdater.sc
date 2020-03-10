@@ -81,26 +81,28 @@ BusUpdater : PeriodicUpdater {
 }
 
 OSCReplyUpdater {
-	var <server, <rate, <name;
+	var <target, <rate, <>addAction, <name;
 	var <node, <valueFunc, <triggerFunc, <synthDef, responder;
 	var <value, <replyCount = 0;
 	var valueStructure;
 
 	*basicNew {
-		|server, rate|
-		^super.newCopyArgs(server ? Server.default, rate ? 1).init;
+		|target, rate, addAction|
+		^super.newCopyArgs(target ? Server.default, rate ? 1, addAction ? \addAfter).init;
 	}
 
 	*new {
-		|synthDefFunc, rate, server|
+		|synthDefFunc, rate, target, addAction|
 		^super.newCopyArgs(
-			server ? Server.default,
-			rate ? 1
+			target ? Server.default,
+			rate ? 1,
+			addAction ? \addAfter
 		).init.valueFunc_(synthDefFunc)
 	}
 
 	init {
 		name = this.class.name;
+		target = target.asTarget;
 
 		responder = OSCFunc(this.onReply(_), this.address).permanent_(true);
 
@@ -211,17 +213,23 @@ OSCReplyUpdater {
 		synthDef = this.buildSynthDef.add;
 
 		fork {
-			server.sync;
+			target.server.sync;
 			this.updateSynth();
 		}
 	}
 
 	updateSynth {
-		if (server.serverRunning) {
+		if (target.server.serverRunning) {
 			if (node.notNil) {
 				node = Synth.replace(node, synthDef.name, [this.rateArg, rate], true);
+				switch (addAction,
+					\addToHead, { node.moveToHead(target) },
+					\addToTail, { node.moveToTail(target) },
+					\addBefore, { node.moveBefore(target) },
+					\addAfter, { node.moveAfter(target) },
+				);
 			} {
-				node = Synth(synthDef.name, [this.rateArg, rate], server, \addAfter);
+				node = Synth(synthDef.name, [this.rateArg, rate], target, addAction);
 			}
 		}
 	}
@@ -236,13 +244,13 @@ SignalStatsUpdater : OSCReplyUpdater {
 	var inputFunc;
 
 	*new {
-		|inputFunc, statsFunc, server, rate|
-		^(this.basicNew(server, rate)
+		|inputFunc, statsFunc, rate, target, addAction|
+		^(this.basicNew(target, rate, addAction)
 			.inputFunc_(inputFunc)
 			.valueFunc_(statsFunc))
 	}
 
-	minMaxAvgFunc {
+	*minMaxAvgFunc {
 		^{
 			|values, reset|
 			var rateSym;
@@ -258,7 +266,7 @@ SignalStatsUpdater : OSCReplyUpdater {
 		}
 	}
 
-	combinedMinMaxAvgFunc {
+	*combinedMinMaxAvgFunc {
 		^{
 			|values, reset|
 			var rateSym;
@@ -266,16 +274,17 @@ SignalStatsUpdater : OSCReplyUpdater {
 
 			rateSym = if (values.rate == \audio, \ar, \kr);
 
+			values = values.asArray;
 			min = RunningMin.perform(rateSym, ArrayMax.perform(rateSym, values), reset);
 			max = RunningMax.perform(rateSym, ArrayMin.perform(rateSym, values), reset);
 			avg = AverageOutput.perform(rateSym, values.sum / values.size, reset);
 
-			[avg, min, max];
+			[avg, min[0], max[0]];
 		}
 	}
 
 	defaultValueFunc {
-		^this.minMaxAvgFunc
+		^this.class.minMaxAvgFunc
 	}
 
 	defaultInputFunc {
@@ -309,8 +318,8 @@ BusStatsUpdater : SignalStatsUpdater {
 	var <bus, <inputBus=false;
 
 	*new {
-		|bus, statsFunc, server, rate|
-		^(super.basicNew(server, rate)
+		|bus, statsFunc, target, rate, addAction|
+		^(super.basicNew(target ?? bus.server, rate, addAction)
 			.bus_(bus)
 			.valueFunc_(statsFunc));
 	}
