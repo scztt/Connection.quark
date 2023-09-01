@@ -33,5 +33,13 @@ ItemSpec : ControlSpec {
 	copy {
 		^this.class.newFrom(this)
 	}
+
+	constrain { arg value;
+		if (items.includes(value).not) {
+			Error("Value must be one of the items %".format(items.cs)).throw
+		}
+		^value
+
+	}
 }
 
