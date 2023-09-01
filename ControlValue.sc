@@ -172,7 +172,7 @@ NumericControlValue : AbstractControlValue {
 }
 
 IndexedControlValue : AbstractControlValue {
-	*defaultSpec { ^ItemsSpec([]) }
+	*defaultSpec { ^ItemSpec([]) }
 
 	next {
 		var index;
