@@ -26,7 +26,7 @@ ItemSpec : ControlSpec {
 	unmap { arg value;
 		var index = items.indexOf(value);
 		if (index.isNil) { ^nil } {
-			index * (1.0 / items.size);
+			^index * (1.0 / items.size);
 		}
 	}
 
