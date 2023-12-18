@@ -85,12 +85,14 @@ AbstractControlValue {
 	signal {
 		|keyOrFunc|
 		if (keyOrFunc == \input) {
-			^inputTransform ?? {
+			^if (inputTransform.isNil or: { inputTransform.dependants.isNil }) {
 				inputTransform = super.signal(\value).transform({
 					|obj, what, value, unmappedValue|
 					[obj, what, unmappedValue]
 				})
-			}
+			} {
+				inputTransform
+			};
 		} {
 			^super.signal(keyOrFunc)
 		}
