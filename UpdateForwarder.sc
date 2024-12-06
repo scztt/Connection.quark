@@ -107,7 +107,24 @@ UpdateForwarder {
 	}
 }
 
-UpdateFilter : UpdateForwarder {
+UpdateForwarderWithInit : UpdateForwarder {
+	var <lastObject;
+
+	onDependantAdded {
+				lastObject !? { |o| o.constrain };
+	}
+
+	update {
+		|object, what ...args|
+		lastObject = object;
+		super.update(object, what, *args);
+	}
+
+}
+
+
+
+UpdateFilter : UpdateForwarderWithInit {
 	var <>func;
 
 	*new {
@@ -123,7 +140,7 @@ UpdateFilter : UpdateForwarder {
 	}
 }
 
-UpdateTransform : UpdateForwarder {
+UpdateTransform : UpdateForwarderWithInit {
 	var <>func;
 
 	*new {
