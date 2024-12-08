@@ -26,12 +26,20 @@ ItemSpec : ControlSpec {
 	unmap { arg value;
 		var index = items.indexOf(value);
 		if (index.isNil) { ^nil } {
-			index * (1.0 / items.size);
+			^index * (1.0 / items.size);
 		}
 	}
 
 	copy {
 		^this.class.newFrom(this)
+	}
+
+	constrain { arg value;
+		if (items.includes(value).not) {
+			Error("Value must be one of the items %".format(items.cs)).throw
+		}
+		^value
+
 	}
 }
 

@@ -85,12 +85,14 @@ AbstractControlValue {
 	signal {
 		|keyOrFunc|
 		if (keyOrFunc == \input) {
-			^inputTransform ?? {
+			^if (inputTransform.isNil or: { inputTransform.dependants.isNil }) {
 				inputTransform = super.signal(\value).transform({
 					|obj, what, value, unmappedValue|
 					[obj, what, unmappedValue]
 				})
-			}
+			} {
+				inputTransform
+			};
 		} {
 			^super.signal(keyOrFunc)
 		}
@@ -172,7 +174,7 @@ NumericControlValue : AbstractControlValue {
 }
 
 IndexedControlValue : AbstractControlValue {
-	*defaultSpec { ^ItemsSpec([]) }
+	*defaultSpec { ^ItemSpec([]) }
 
 	next {
 		var index;
@@ -261,49 +263,26 @@ BusControlValue : NumericControlValue {
 	asBus { ^this.bus }
 }
 
-OnOffControlValue : AbstractControlValue {
+OnOffControlValue : IndexedControlValue {
 	var value, onSig, offSig;
 
 	*defaultSpec { ^ItemSpec([\off, \on]) }
 
 	on {
-		this.value = \on;
+		this.input = 1;
 	}
 
 	off {
-		this.value = \off;
+		this.input = 0;
 	}
 
 	toggle {
-		this.value = (value == \on).if(\off, \on);
-	}
-
-	value_{
-		|inVal|
-		if ((inVal == \on) || (inVal == \off)) {
-			if (inVal != value) {
-				value = inVal;
-				this.changed(\value, value);
-				this.changed(inVal);
-			}
-		} {
-			Error("Value must be \off or \on").throw
-		}
-	}
-
-	input_{
-		|inputVal|
-		this.value = (inputVal > 0.5).if(\on, \off);
+		this.input = 1 - this.input;
 	}
 
 	input {
-		^switch (value,
-			{ \off }, { 0 },
-			{ \on }, { 1 }
-		)
+		^spec.items.indexOf(value)
 	}
-
-	constrain {}
 }
 
 MIDIControlValue : NumericControlValue {
