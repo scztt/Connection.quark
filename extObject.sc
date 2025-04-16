@@ -78,9 +78,14 @@
 			name = \defaultUniqueConnection;
 		};
 
+		dependants = dependants.reject(_.isNil);
+
 		this.uniqueConnectionAt(name).free;
-		connection = this.connectTo(*dependants);
-		this.uniqueConnectionPut(name, connection);
+
+		if (dependants.notEmpty) {
+			connection = this.connectTo(*dependants);
+			this.uniqueConnectionPut(name, connection);
+		};
 
 		^connection
 	}

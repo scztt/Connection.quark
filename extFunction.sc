@@ -1,11 +1,11 @@
 +Function {
-	*identity {
-		^{ |in| in }
-	}
-
-	*postln {
-		^{|...args| args.postln }
-	}
+    *identity {
+        ^{ |in| in }
+    }
+    
+    *postln {
+        ^{|...args| args.postln }
+    }
 }
 
 

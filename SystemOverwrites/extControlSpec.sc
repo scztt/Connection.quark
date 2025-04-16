@@ -10,6 +10,17 @@
 		this.step 		= otherSpec.step;
 		this.default 	= otherSpec.default;
 		this.units 		= otherSpec.units;
-		this.grid 		= otherSpec.grid.copy.spec_(this);
+
+		if (otherSpec.instVarAt(\grid).notNil) {
+			"found a grid: %".format(otherSpec).postln;
+			this.grid 		= otherSpec.instVarAt(\grid).copy.spec_(this)
+		}
+	}
+
+	warp_{
+		|w|
+		warp = w.copy;
+		w.spec = this;
+		this.changed(\warp);
 	}
 }

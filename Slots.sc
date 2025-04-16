@@ -127,7 +127,7 @@ SynthArgSlot {
 	update {
 		|obj, what, value|
 		if (synth.notNil) {
-			synth.set(argName, value);
+			synth.server.makeBundle(nil, { synth.set(argName, value) });
 		}
 	}
 

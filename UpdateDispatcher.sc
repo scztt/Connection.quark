@@ -52,7 +52,6 @@ UpdateDispatcher {
 	}
 
 	free {
-		// "Clearing dispatcher %".format(this.identityHash).postln;
 		this.class.dispatcherDict[this.class.dispatcherDict.findKeyForValue(this)] = nil; // clear self
 		connection.free();
 		connection = dispatchTable = nil;
@@ -129,5 +128,4 @@ UpdateDispatcherItem : UpdateForwarder {
 		|name, value|
 		^UniqueConnections.put(object, key, name, value)
 	}
-
 }

@@ -13,7 +13,7 @@ ViewActionUpdater {
 		|propertyName\value, signalName=\value|
 		var func = funcs.at(propertyName, signalName);
 		if (func.isNil) {
-			func = "{ |view ...args| view.changed('%', view.%) }".format(signalName, propertyName).interpret;
+			func = "{ |view ...args| view.changed('%', view.%, args) }".format(signalName, propertyName).interpret;
 			funcs.put(propertyName, signalName, func);
 		};
 		^func;

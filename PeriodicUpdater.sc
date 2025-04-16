@@ -236,7 +236,7 @@ OSCReplyUpdater {
 
 	doOnServerTree {
 		node = nil;
-		this.updateSynth();
+		this.updateSynthDef();
 	}
 }
 

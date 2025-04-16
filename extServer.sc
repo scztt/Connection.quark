@@ -17,19 +17,16 @@ ServerActionForwarder {
 
 	*doOnServerBoot {
 		|server|
-		"%: boot".format(server).postln;
 		server.changed(\serverBoot);
 	}
 
 	*doOnServerQuit {
 		|server|
-		"%: quit".format(server).postln;
 		server.changed(\serverBoot);
 	}
 
 	*doOnServerTree {
 		|server|
-		"%: tree".format(server).postln;
 		server.changed(\serverBoot);
 	}
 }
