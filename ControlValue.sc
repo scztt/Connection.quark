@@ -1170,11 +1170,17 @@ ControlValueEnvir : EnvironmentRedirect {
     
     asSynthArgs {
         |...keys|
-        if (keys.size == 0) {
-            ^envir.asPairs
+        var args = if (groupPrefix.size > 0) {
+            this.prefixCollect(groupPrefix, {|v| v })
         } {
-            ^[keys, envir.atAll(keys)].flop.flatten
-        }
+            envir
+        };
+        
+        if (keys.size > 0) {
+            ^args.select { |v, k| keys.includes(k) };
+        };
+        
+        ^args.asPairs
     }
     
     asSynthMapArgs {
@@ -1231,6 +1237,14 @@ ControlValueEnvir : EnvironmentRedirect {
         if (created) { this.changed(\controls) };
         
         ^control
+    }
+    
+    atAll {
+        |keys|
+        ^keys.collect {
+            |key|
+            this.at(key)
+        }
     }
     
     put {
@@ -1551,6 +1565,7 @@ ControlValueEnvir : EnvironmentRedirect {
     *removePrefix {
         |prefix, key|
         if (prefix.isNil) { ^key };
+        if (prefix.isKindOf(Array)) { prefix = prefix.join("_") };
         ^key.asString.replace(prefix ++ "_", "").asSymbol
     }
     
