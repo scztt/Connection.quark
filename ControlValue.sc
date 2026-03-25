@@ -245,6 +245,21 @@ AbstractControlValue {
         |ccNumOrFunc, chan, srcID, argTemplate, dispatcher, broadcast=false, midiMethod=(\cc)|
         ^MIDIControlValue().cc_(ccNumOrFunc, chan, srcID, argTemplate, dispatcher, broadcast, midiMethod).mapTo(this);
     }
+    
+    sort {
+        |other|
+        if ((this.group.notNil && other.group.notNil)) { 
+            if ((this.group[\order] ? 0) != (other.group[\order] ? 0)) {
+                ^(this.group[\order] ? 0) < (other.group[\order] ? 0)
+            }
+        };
+        
+        if (this.md[\order].notNil && other.md[\order].notNil) {
+            ^(this.md[\order] < other.md[\order])
+        };
+        
+        ^(this.name.asString < other.name.asString)
+    }
 }
 
 NumericControlValue : AbstractControlValue {
@@ -652,7 +667,7 @@ OnOffControlValue : ArrayControlValue {
 MIDIControlValue : NumericControlValue {
     classvar <>broadcastMuteTime=0.2, <>mappings;
     // classvar <cc14Max = 8192; // (128*128) - 1 workaround eletra bug...
-    classvar <cc14Max = 16383;
+    classvar <cc14Max = 8191;
     var <>inputSpec, <isOwned=false;
     var func, <midiFunc, broadcastDest, broadcastFunc, lastInEvent=0;
     
@@ -1512,6 +1527,14 @@ ControlValueEnvir : EnvironmentRedirect {
         ^this.keys.collect(this.class.splitPrefix(_)).asSet
     }
     
+    prefixClear {
+        |prefix|
+        this.prefixKeys(prefix).do {
+            |key|
+            this.put(key, nil);
+        }
+    }
+    
     prefixDo {
         |prefix, func|
         this.prefixKeys(prefix).do {
@@ -1681,6 +1704,10 @@ ControlValueEnvir : EnvironmentRedirect {
         }
     }
     
+    sortedDo {
+        |function|
+        ^this.envir.values.asArray.sort({ |a, b| a.sort(b) }).do(function);
+    }
 }
 
 ControlValueEnvirStates : Singleton {
