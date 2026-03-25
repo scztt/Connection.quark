@@ -35,7 +35,7 @@ MethodSlot {
 			Exception("Object of type % doesn't respond to %.".format(reciever.class, methodName)).throw;
 		};
 
-		^"{ |reciever, object, changed, args| var value = args[0]; reciever.% }".format(methodString).interpret;
+		^"{ |reciever, object, changed, args| var value = args[0]; var input = args[1]; reciever.% }".format(methodString).interpret;
 	}
 
 	update {
