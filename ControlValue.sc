@@ -21,14 +21,16 @@ AbstractControlValue {
     }
     
     // Metadata
-    metadata { 		^(metadata ?? { metadata = () }) }
-    md { 			^this.metadata }
-    md_{ |md| 		^this.metadata_(md) }
-    name {			^this.metadata[\name] ?? { spec.tryPerform(\units) } }
-    name_{ |value| 	 this.metadata[\name] = value }
-    color {			^this.metadata[\color] }
-    color_{ |value|  this.metadata[\color] = value }
-    group {         ^this.metadata[\group] }
+    metadata { 		        ^(metadata ?? { metadata = () }) }
+    md { 			        ^this.metadata }
+    md_{ |md| 		        ^this.metadata_(md) }
+    name {			        ^this.metadata[\name] ?? { spec.tryPerform(\units) } }
+    name_{ |value| 	         this.metadata[\name] = value }
+    displayName {			^this.metadata[\displayName] ?? { this.name.asString.split($_).last } }
+    displayName_{ |value| 	 this.metadata[\displayName] = value }
+    color {			        ^this.metadata[\color] }
+    color_{ |value|          this.metadata[\color] = value }
+    group {                 ^this.metadata[\group] }
     
     emitChanged {
         var input = this.input;
